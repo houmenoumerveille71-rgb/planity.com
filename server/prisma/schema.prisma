@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Modèle pour les Salons
+model Salon {
+  id          Int       @id @default(autoincrement())
+  name        String
+  address     String
+  city        String?
+  category    String
+  description String?
+  image       String?
+  latitude    Float?    // Coordonnées géographiques
+  longitude   Float?
+  userId      Int?      @unique
+  user        User?     @relation(fields: [userId], references: [id])
+  hasLocal    Boolean?  // Le pro a un local commercial
+  isActive    Boolean   @default(true)  // Le salon est actif
+  validationMode String  @default("auto")
+  approvalStatus String @default("pending") // pending, approved, rejected, published
+  approvedAt DateTime?
+  approvedBy Int?
+  depositRequired Boolean @default(true)
+  cancellationDelay String @default("24")
+  openingHours String   @default("9h-19h")
+  services    Service[]
+  appointments Appointment[]
+  availabilities SalonAvailability[]
+  invitations Invitation[]
+}
+
+// Modèle pour les Disponibilités des Salons
+model SalonAvailability {
+  id        Int      @id @default(autoincrement())
+  salonId   Int
+  salon     Salon    @relation(fields: [salonId], references: [id])
+  dayOfWeek Int      // 0=dim, 1=lun, ..., 6=sam
+  startTime String   // HH:MM
+  endTime   String   // HH:MM
+}
+
+// Modèle pour les Utilisateurs
+model User {
+  id        Int         @id @default(autoincrement())
+  name      String
+  email     String      @unique
+  password  String
+  phone     String?
+  profileImage String?   // Photo de profil du gérant (avatar)
+  role      String      @default("client") // client, salon_owner, employee
+  resetToken String?
+  resetTokenExpiry DateTime?
+  
+  // Champs spécifiques aux professionnels
+  siret           String?
+  businessType    String?    // salon, institute, spa
+  workLocation    String?    // local_commercial, domicile, chez_clients
+  experience      String?    // creation, moins_1_an, plus_1_an
+  workRhythm      String?    // heures_partielles, temps_partiel, temps_plein
+  
+  createdAt DateTime    @default(now())
+  appointments Appointment[]
+  salon     Salon?
+}
+
+// Modèle pour les Prestations
+model Service {
+  id          Int      @id @default(autoincrement())
+  name        String
+  price       Float
+  duration    Int
+  category    String?
+  description String?
+  salonId     Int
+  salon       Salon    @relation(fields: [salonId], references: [id])
+  appointments Appointment[]
+}
+
+// Modèle pour les Rendez-vous
+model Appointment {
+  id        Int      @id @default(autoincrement())
+  startTime DateTime
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  serviceId Int
+  service   Service  @relation(fields: [serviceId], references: [id])
+  salonId   Int
+  salon     Salon    @relation(fields: [salonId], references: [id])
+  invoice   Invoice?
+}
+
+// Modèle pour les Factures
+model Invoice {
+  id           Int        @id @default(autoincrement())
+  appointmentId Int       @unique
+  appointment  Appointment @relation(fields: [appointmentId], references: [id])
+  amount       Float
+  status       String     @default("unpaid") // paid, unpaid
+  stripePaymentIntentId String?
+}
+
+// Modèle pour les Invitations
+model Invitation {
+  id        Int      @id @default(autoincrement())
+  salonId   Int
+  salon     Salon    @relation(fields: [salonId], references: [id])
+  email     String
+  role      String   @default("employee") // employee, manager
+  token     String   @unique
+  status    String   @default("pending") // pending, accepted, rejected, expired
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+// Modèle pour les Demandes de Démo
+model DemoRequest {
+  id              Int      @id @default(autoincrement())
+  
+  // Infos salon
+  salonName       String?
+  salonType       String?  // salon, institut, spa
+  address         String?
+  city            String?
+  
+  // Infos contact
+  contactName     String?
+  email           String?
+  phone           String?
+  
+  // Infos business
+  hasLocal        Boolean?
+  workLocation    String?  // domicile, chez_clients
+  experience      String?  // creation, moins_1_an, plus_1_an
+  workRhythm     String?  // heures_partielles, temps_partiel, temps_plein
+  siret           String?
+  collaborators   Int?
+  hasSoftware     Boolean?
+  source          String?
+  
+  // Statut
+  status          String   @default("pending") // pending, validated, rejected
+  adminNotes      String?
+  validatedBy     Int?
+  validatedAt     DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
