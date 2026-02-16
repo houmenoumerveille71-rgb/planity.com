@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../AuthContext';
+import { useAuth, isProfessionalUser } from '../AuthContext';
 import { ADMIN_CONFIG } from '../config/adminConfig';
 import PhoneInput from './PhoneInput';
 
@@ -22,7 +22,12 @@ const Login = ({ isRegister = false }) => {
   // Redirect if already logged in
   useEffect(() => {
     if (token && user) {
-      navigate('/account');
+      // Redirect professionals to their dashboard
+      if (isProfessionalUser(user)) {
+        navigate('/professional/dashboard');
+      } else {
+        navigate('/account');
+      }
     }
   }, [token, user, navigate]);
 
@@ -89,7 +94,12 @@ const Login = ({ isRegister = false }) => {
       if (response.ok) {
         if (isLogin) {
           login(data.token, data.user);
-          window.location.href = '/account';
+          // Redirect professionals to their dashboard
+          if (isProfessionalUser(data.user)) {
+            navigate('/professional/dashboard');
+          } else {
+            window.location.href = '/account';
+          }
         } else {
           setMessage('Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
           setIsLogin(true);
@@ -249,6 +259,19 @@ const Login = ({ isRegister = false }) => {
     Mot de passe oublié ?
   </button>
 )}
+{/* Lien vers la connexion professionnelle */}
+<div className="mt-8 p-4 bg-gray-50 rounded-lg text-center">
+  <p className="text-sm text-gray-600 mb-2">
+    Vous êtes un professionnel de beauté ?
+  </p>
+  <button
+    type="button"
+    onClick={() => navigate('/pro-login')}
+    className="text-sm font-medium text-indigo-600 hover:text-indigo-800 underline"
+  >
+    Connectez-vous à votre espace pro
+  </button>
+</div>
 </div>
 </main>
 </div>

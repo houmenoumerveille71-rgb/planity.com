@@ -68,7 +68,7 @@ const EditServiceModal = ({ service, onClose, onUpdate, existingCategories = [] 
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Prix (€) *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Prix (FCFA) *</label>
               <input
                 type="number"
                 value={formData.price}

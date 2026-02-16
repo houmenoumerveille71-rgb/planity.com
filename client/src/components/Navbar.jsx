@@ -1,7 +1,7 @@
 import React from 'react';
 import { User } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../AuthContext';
+import { useAuth, isProfessionalUser } from '../AuthContext';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -26,16 +26,17 @@ const Navbar = () => {
 
   const handleAccountClick = () => {
     if (user) {
-      navigate('/profile');
+      if (isProfessionalUser(user)) {
+        navigate('/professional/dashboard');
+      } else {
+        navigate('/account');
+      }
     } else {
-      navigate('/register');
+      navigate('/login');
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
+
 
   return (
     <nav className={`${isHomePage ? 'absolute' : 'sticky'} top-0 left-0 right-0 z-50 bg-transparent py-3 px-6 flex items-center justify-between`}>
@@ -45,13 +46,13 @@ const Navbar = () => {
           P L A N I T Y
         </h1>
         
-        {/* Catégories - Visible sur desktop */}
+         {/* Catégories - Visible sur desktop */}
         <div className={`hidden lg:flex items-center gap-6 text-[13px] font-medium ${categoriesColor} ${categoriesHover} transition-colors`}>
-          <a href="#" className={categoriesHover}>Coiffeur</a>
-          <a href="#" className={categoriesHover}>Barbier</a>
-          <a href="#" className={categoriesHover}>Manucure</a>
-          <a href="#" className={categoriesHover}>Institut de beauté</a>
-          <a href="#" className={categoriesHover}>Bien-être</a>
+          <a href="/search?category=Coiffeur" className={categoriesHover}>Coiffeur</a>
+          <a href="/search?category=Barbier" className={categoriesHover}>Barbier</a>
+          <a href="/search?category=Manucure" className={categoriesHover}>Manucure</a>
+          <a href="/search?category=Institut" className={categoriesHover}>Institut de beauté</a>
+          <a href="/search?category=Bien-être" className={categoriesHover}>Bien-être</a>
         </div>
       </div>
 
@@ -71,13 +72,7 @@ const Navbar = () => {
               className="flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors shadow-sm"
             >
               <User size={18} />
-              <span>{user.name || user.firstName || 'Mon compte'}</span>
-            </button>
-            <button 
-              onClick={handleLogout}
-              className={`text-sm ${categoriesColor} hover:text-red-500 transition-colors`}
-            >
-              Déconnexion
+              <span>Compte</span>
             </button>
           </div>
         ) : (

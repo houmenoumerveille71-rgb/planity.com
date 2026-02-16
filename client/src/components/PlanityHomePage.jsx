@@ -7,6 +7,7 @@ import PlanityStatsSection from './PlanityStatsSection';
 const PlanityHomePage = () => {
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
   // Images pour le carousel
   const carouselImages = [
@@ -38,44 +39,40 @@ const PlanityHomePage = () => {
     setCurrentImageIndex(index);
   };
 
+  const commonCities = ['Cotonou', 'Porto-Novo', 'Parakou', 'Djougou', 'Bohicon', 'Abomey', 'Calavi', 'Ouidah', 'Lokossa', 'Kandi'];
+
   const categories = [
     {
       title: 'Coiffeur',
       subtitle: 'Trouvez votre salon',
       description: 'Coupe, coloration et coiffure',
-      cities: ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Strasbourg', 'Montpellier', 'Bordeaux', 'Lille', 'Rennes']
+      cities: commonCities
     },
     {
       title: 'Barbier',
       subtitle: 'Barbe et rasage',
       description: 'Expertise homme',
-      cities: ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Strasbourg', 'Montpellier', 'Bordeaux', 'Lille']
+      cities: commonCities
     },
     {
       title: 'Manucure',
       subtitle: 'Beauté des ongles',
       description: 'Manucure et Pédicure',
-      cities: ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Montpellier', 'Bordeaux', 'Lille', 'Strasbourg']
+      cities: commonCities
     },
     {
       title: 'Institut',
       subtitle: 'Soins et bien-être',
       description: 'Épilation et soins',
-      cities: ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Montpellier', 'Bordeaux', 'Lille']
-    },
-    {
-      title: 'Massage',
-      subtitle: 'Détente et relaxation',
-      description: 'Massages & spa',
-      cities: ['Paris', 'Marseille', 'Lyon', 'Toulouse', 'Nice', 'Nantes', 'Bordeaux']
+      cities: commonCities
     }
   ];
 
   const otherCategories = [
-    { title: 'Réflexologie', cities: ['Bordeaux', 'Strasbourg', 'Toulouse', 'Montpellier'] },
-    { title: 'Esthéticienne', cities: ['Bordeaux', 'Lyon', 'Toulouse', 'Montpellier'] },
-    { title: 'Hyperhidrose (Botox)', cities: ['Bordeaux', 'Lyon', 'Toulouse'] },
-    { title: 'Maquillage permanent', cities: ['Bordeaux', 'Lyon', 'Toulouse', 'Montpellier', 'Nantes', 'Strasbourg'] }
+    { title: 'Réflexologie', cities: commonCities },
+    { title: 'Esthéticienne', cities: commonCities },
+    { title: 'Maquillage permanent', cities: commonCities },
+    { title: 'Massage', cities: commonCities }
   ];
 
   return (
@@ -177,7 +174,7 @@ const PlanityHomePage = () => {
 
             {/* Titre */}
             <h2 style={styles.recruitmentTitle}>
-              Planity recherche des profils dans toute la France pour digitaliser le secteur de la beauté
+              Planity recherche des profils dans tout le Bénin pour digitaliser le secteur de la beauté
             </h2>
 
             {/* Signature */}
@@ -205,8 +202,8 @@ const PlanityHomePage = () => {
       {/* Locations Section */}
       <section style={styles.locationsSection}>
         <div style={styles.locationsContent}>
-          <p style={styles.locationsLabel}>PARTOUT EN FRANCE</p>
-          <h2 style={styles.locationsTitle}>Trouvez votre établissement beauté partout en France</h2>
+          <p style={styles.locationsLabel}>PARTOUT AU BÉNIN</p>
+          <h2 style={styles.locationsTitle}>Trouvez votre établissement beauté partout au Bénin</h2>
           
           <div style={styles.categoriesGrid}>
             {categories.map((category, idx) => (
@@ -229,7 +226,7 @@ const PlanityHomePage = () => {
                   {category.cities.map((city, cityIdx) => (
                     <a 
                       key={cityIdx} 
-                      href="#" 
+                      href={`/search?category=${encodeURIComponent(category.title)}&city=${encodeURIComponent(city)}`} 
                       style={styles.cityLink}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.textDecoration = 'underline';
@@ -267,7 +264,7 @@ const PlanityHomePage = () => {
                   {category.cities.map((city, cityIdx) => (
                     <a 
                       key={cityIdx} 
-                      href="#" 
+                      href={`/search?category=${encodeURIComponent(category.title)}&city=${encodeURIComponent(city)}`} 
                       style={styles.cityLink}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.textDecoration = 'underline';
@@ -489,7 +486,7 @@ const styles = {
   },
   categoriesGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    gridTemplateColumns: 'repeat(4, 1fr)',
     gap: '2rem',
     marginBottom: '3rem',
   },
@@ -499,6 +496,7 @@ const styles = {
     borderRadius: '12px',
     transition: 'all 0.3s ease',
     cursor: 'pointer',
+    minHeight: '320px',
   },
   categoryCardTitle: {
     fontSize: '1.5rem',
@@ -530,7 +528,7 @@ const styles = {
   },
   otherCategoriesGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gridTemplateColumns: 'repeat(4, 1fr)',
     gap: '2rem',
   },
   otherCategory: {
@@ -539,6 +537,7 @@ const styles = {
     borderRadius: '8px',
     transition: 'all 0.3s ease',
     cursor: 'pointer',
+    minHeight: '180px',
   },
   otherCategoryTitle: {
     fontSize: '1.125rem',

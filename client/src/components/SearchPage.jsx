@@ -100,8 +100,8 @@ const SearchPage = () => {
   const markersRef = useRef([]);
   
   // Paramètres de recherche depuis l'URL
-  const serviceQuery = searchParams.get('service') || '';
-  const locationQuery = searchParams.get('ville') || '';
+  const serviceQuery = searchParams.get('service') || searchParams.get('category') || '';
+  const locationQuery = searchParams.get('ville') || searchParams.get('city') || '';
 
   // États pour les champs de recherche
   const [searchQuery, setSearchQuery] = useState({

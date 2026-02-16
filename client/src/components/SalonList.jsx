@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import ServiceCard from './ServiceCard';
 import Nav from './Navbar';
 
@@ -42,13 +42,9 @@ const SalonList = () => {
   const [allCategories, setAllCategories] = useState(['Tous']);
   const [allCities, setAllCities] = useState([]);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
-  const [selectedCity, setSelectedCity] = useState(null);
-  const [selectedSalon, setSelectedSalon] = useState(null);
-  const [selectedServices, setSelectedServices] = useState([]);
   const [salonAvailabilities, setSalonAvailabilities] = useState({});
-  const [weekDates, setWeekDates] = useState(getWeekDates());
+  const [weekDates] = useState(getWeekDates());
   const cityInputRef = useRef(null);
-  const navigate = useNavigate();
 
   // Charger les disponibilités pour chaque salon
   const loadAvailabilities = async () => {
@@ -186,34 +182,10 @@ const SalonList = () => {
 
   const handleCitySelect = (city) => {
     setSearchLocation(city.name);
-    setSelectedCity(city);
     setShowCitySuggestions(false);
   };
 
-  const handleSalonSelect = (salon) => {
-    setSelectedSalon(salon);
-    setSelectedServices([]);
-  };
 
-  const handleServiceSelect = (service) => {
-    if (selectedServices.find(s => s.id === service.id)) {
-      // Désélectionner le service
-      setSelectedServices(selectedServices.filter(s => s.id !== service.id));
-    } else {
-      // Sélectionner le service
-      setSelectedServices([...selectedServices, service]);
-    }
-  };
-
-  const handleBookAppointment = (salon) => {
-    // Stocker les informations sélectionnées dans localStorage pour la page de réservation
-    localStorage.setItem('selectedSalonId', salon.id.toString());
-    localStorage.setItem('selectedSalonName', salon.name);
-    localStorage.setItem('selectedServices', JSON.stringify(selectedServices));
-    
-    // Naviguer vers la page de réservation
-    navigate(`/salon/${salon.id}`);
-  };
 
   if (loading) return <div className="text-center p-10">Chargement des salons...</div>;
 
@@ -399,7 +371,6 @@ const SalonList = () => {
                   <Link 
                     to={`/salon/${salon.id}`}
                     className="block text-center bg-purple-100 text-purple-700 py-2 rounded-lg hover:bg-purple-200 transition-colors text-sm font-medium mb-4"
-                    onClick={() => handleSalonSelect(salon)}
                   >
                     Plus d'informations
                   </Link>
@@ -407,7 +378,6 @@ const SalonList = () => {
                   <Link 
                     to={`/salon/${salon.id}`}
                     className="block text-center bg-pink-900 text-white py-2 rounded hover:bg-pink-600 transition-colors"
-                    onClick={() => handleSalonSelect(salon)}
                   >
                     Prendre rendez-vous
                   </Link>

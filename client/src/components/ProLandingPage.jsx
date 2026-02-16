@@ -1,11 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, Star, ArrowRight, ArrowLeft } from 'lucide-react';
 import NavbarPro from './NavbarPro';
 import PhoneInput from './PhoneInput';
+import { useAuth, isProfessionalUser } from '../AuthContext';
 
 const ProLandingPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  // Redirect logged-in users to their appropriate dashboard
+  useEffect(() => {
+    if (user) {
+      if (isProfessionalUser(user)) {
+        navigate('/professional/dashboard');
+      } else {
+        navigate('/account');
+      }
+    }
+  }, [user, navigate]);
   
   // État pour l'onboarding
   const [step, setStep] = useState(1);

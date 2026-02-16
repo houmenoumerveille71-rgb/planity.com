@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../AuthContext';
+import { useAuth, isProfessionalUser } from '../AuthContext';
 import PhoneInput from './PhoneInput';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
@@ -8,7 +8,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api
 const ProfessionalAccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const [view, setView] = useState('landing'); // landing, login, register, demo-success
   const [successMessage, setSuccessMessage] = useState('');
   const [formData, setFormData] = useState({
@@ -25,6 +25,17 @@ const ProfessionalAccess = () => {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  // Redirect logged-in users to their appropriate dashboard
+  useEffect(() => {
+    if (user) {
+      if (isProfessionalUser(user)) {
+        navigate('/professional/dashboard');
+      } else {
+        navigate('/account');
+      }
+    }
+  }, [user, navigate]);
 
   // Vérifier si l'utilisateur vient de soumettre une demande de démo
   useEffect(() => {

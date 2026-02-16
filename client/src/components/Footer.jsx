@@ -19,7 +19,7 @@ const Footer = () => {
             <li className="hover:text-white cursor-pointer">Je suis un professionnel de beauté</li>
             <li className="hover:text-white cursor-pointer">Rejoignez-nous</li>
             <li className="hover:text-white cursor-pointer">CGU</li>
-            <li className="hover:text-white cursor-pointer">Planity Belgique</li>
+            <li className="hover:text-white cursor-pointer">Planity Bénin</li>
             <li className="hover:text-white cursor-pointer">Politique de confidentialité</li>
             <li className="hover:text-white cursor-pointer">Gestion des cookies</li>
           </ul>
@@ -29,12 +29,24 @@ const Footer = () => {
         <div>
           <h3 className="text-white font-bold mb-6">Trouvez votre prestation</h3>
           <ul className="space-y-3 text-sm">
-            <li className="hover:text-white cursor-pointer">Coiffeur</li>
-            <li className="hover:text-white cursor-pointer">Institut de beauté</li>
-            <li className="hover:text-white cursor-pointer">Barbier</li>
-            <li className="hover:text-white cursor-pointer">Manucure et beauté des pieds</li>
-            <li className="hover:text-white cursor-pointer">Massage</li>
-            <li className="hover:text-white cursor-pointer">Bien-être</li>
+            <li className="hover:text-white cursor-pointer">
+              <a href="/search?category=Coiffeur" className="hover:text-white">Coiffeur</a>
+            </li>
+            <li className="hover:text-white cursor-pointer">
+              <a href="/search?category=Institut" className="hover:text-white">Institut de beauté</a>
+            </li>
+            <li className="hover:text-white cursor-pointer">
+              <a href="/search?category=Barbier" className="hover:text-white">Barbier</a>
+            </li>
+            <li className="hover:text-white cursor-pointer">
+              <a href="/search?category=Manucure" className="hover:text-white">Manucure et beauté des pieds</a>
+            </li>
+            <li className="hover:text-white cursor-pointer">
+              <a href="/search?category=Massage" className="hover:text-white">Massage</a>
+            </li>
+            <li className="hover:text-white cursor-pointer">
+              <a href="/search?category=Bien-être" className="hover:text-white">Bien-être</a>
+            </li>
           </ul>
         </div>
 
@@ -42,10 +54,18 @@ const Footer = () => {
         <div>
           <h3 className="text-white font-bold mb-6">Recherches fréquentes</h3>
           <ul className="space-y-3 text-sm">
-            <li className="hover:text-white cursor-pointer">Coiffeur Paris</li>
-            <li className="hover:text-white cursor-pointer">Coiffeur Bordeaux</li>
-            <li className="hover:text-white cursor-pointer">Coiffeur Lyon</li>
-            <li className="hover:text-white cursor-pointer">Coiffeur Toulouse</li>
+            <li className="hover:text-white cursor-pointer">
+              <a href="/search?category=Coiffeur&city=Cotonou" className="hover:text-white">Coiffeur Cotonou</a>
+            </li>
+            <li className="hover:text-white cursor-pointer">
+              <a href="/search?category=Coiffeur&city=Porto-Novo" className="hover:text-white">Coiffeur Porto-Novo</a>
+            </li>
+            <li className="hover:text-white cursor-pointer">
+              <a href="/search?category=Coiffeur&city=Parakou" className="hover:text-white">Coiffeur Parakou</a>
+            </li>
+            <li className="hover:text-white cursor-pointer">
+              <a href="/search?category=Coiffeur&city=Calavi" className="hover:text-white">Coiffeur Calavi</a>
+            </li>
           </ul>
         </div>
       </div>

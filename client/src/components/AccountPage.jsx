@@ -1,25 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useAuth, isProfessionalUser } from '../AuthContext';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Footer from './Footer';
-import { MapPin, Calendar, Trash2, Clock } from 'lucide-react';
+import AppointmentCard from './AppointmentCard';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 const AccountPage = () => {
   const { user, logout, token } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [notifyWhenAvailable, setNotifyWhenAvailable] = useState({});
 
   useEffect(() => {
+    // Redirect professionals to their dashboard
+    if (user && isProfessionalUser(user)) {
+      navigate('/professional/dashboard');
+      return;
+    }
+
     if (!token) {
       navigate('/login');
       return;
     }
     fetchAppointments();
-  }, [token, navigate]);
+  }, [token, navigate, user]);
 
   const fetchAppointments = async () => {
     try {
@@ -40,8 +46,6 @@ const AccountPage = () => {
   };
 
   const cancelAppointment = async (id) => {
-    if (!confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?')) return;
-
     try {
       const response = await fetch(`${API_BASE}/appointments/${id}`, {
         method: 'DELETE',
@@ -67,14 +71,8 @@ const AccountPage = () => {
   const upcomingAppointments = appointments.filter(appt => new Date(appt.startTime) > now);
   const pastAppointments = appointments.filter(appt => new Date(appt.startTime) <= now);
 
-  const [tab, setTab] = useState('upcoming'); // 'upcoming' or 'past'
-
-  // Formater la date
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const options = { weekday: 'long', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
-    return date.toLocaleDateString('fr-FR', options);
-  };
+  // Initialiser l'onglet en fonction du paramètre URL
+  const [tab, setTab] = useState(searchParams.get('tab') === 'appointments' ? 'upcoming' : 'profile');
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -193,108 +191,11 @@ const AccountPage = () => {
                 ) : (
                   <div className="space-y-4">
                     {upcomingAppointments.map((appt) => (
-                      <div key={appt.id} style={styles.card}>
-                        {/* Date Header */}
-                        <div style={styles.dateHeader}>
-                          {formatDate(appt.startTime)}
-                        </div>
-
-                        {/* Card Content */}
-                        <div style={styles.cardContent}>
-                          {/* Image */}
-                          <div style={styles.imageContainer}>
-                            {appt.salon?.image ? (
-                              <img 
-                                src={appt.salon.image} 
-                                alt={appt.salon?.name || 'Salon'} 
-                                style={styles.image}
-                              />
-                            ) : (
-                              <div style={styles.imagePlaceholder}>
-                                💅
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Details */}
-                          <div style={styles.details}>
-                            {/* Title */}
-                            <h3 style={styles.title}>
-                              {appt.service?.name || 'Prestation'}
-                              {appt.salon?.name && ` - ${appt.salon.name}`}
-                            </h3>
-
-                            {/* Address */}
-                            {appt.salon?.address && (
-                              <div style={styles.info}>
-                                <MapPin size={16} style={styles.icon} />
-                                <span style={styles.infoText}>{appt.salon.address}</span>
-                              </div>
-                            )}
-
-                            {/* Service & Duration */}
-                            <div style={styles.info}>
-                              <Clock size={16} style={styles.icon} />
-                              <span style={styles.infoText}>
-                                {appt.service?.name || 'Service'} • {appt.service?.duration || 30}min
-                              </span>
-                            </div>
-
-                            {/* Price */}
-                            <div style={styles.info}>
-                              <span style={styles.priceIcon}>💶</span>
-                              <span style={styles.price}>{appt.service?.price || 0} €</span>
-                            </div>
-
-                            {/* Actions */}
-                            <div style={styles.actions}>
-                              <button style={styles.buttonOutline}>
-                                <Calendar size={18} />
-                                Ajouter à mon agenda
-                              </button>
-
-                              <button 
-                                style={styles.buttonOutline}
-                                onClick={() => cancelAppointment(appt.id)}
-                              >
-                                <Trash2 size={18} />
-                                Annuler le RDV
-                              </button>
-
-                              <button 
-                                style={styles.buttonPrimary}
-                                onClick={() => navigate('/appointments')}
-                              >
-                                Déplacer le RDV
-                              </button>
-                            </div>
-
-                            {/* Notification Toggle */}
-                            <div style={styles.notification}>
-                              <label style={styles.toggleLabel}>
-                                <input
-                                  type="checkbox"
-                                  checked={notifyWhenAvailable[appt.id] || false}
-                                  onChange={(e) => setNotifyWhenAvailable({...notifyWhenAvailable, [appt.id]: e.target.checked})}
-                                  style={styles.toggleInput}
-                                />
-                                <div style={{
-                                  ...styles.toggle,
-                                  backgroundColor: notifyWhenAvailable[appt.id] ? '#6366F1' : '#E5E7EB'
-                                }}>
-                                  <div style={{
-                                    ...styles.toggleCircle,
-                                    transform: notifyWhenAvailable[appt.id] ? 'translateX(24px)' : 'translateX(2px)'
-                                  }} />
-                                </div>
-                                <span style={styles.toggleText}>
-                                  Me prévenir si un RDV se libère avant
-                                </span>
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <AppointmentCard
+                        key={appt.id}
+                        appointment={appt}
+                        onCancel={cancelAppointment}
+                      />
                     ))}
                   </div>
                 )
@@ -304,61 +205,11 @@ const AccountPage = () => {
                 ) : (
                   <div className="space-y-4">
                     {pastAppointments.map((appt) => (
-                      <div key={appt.id} style={styles.card}>
-                        {/* Date Header */}
-                        <div style={styles.dateHeader}>
-                          {formatDate(appt.startTime)}
-                        </div>
-
-                        {/* Card Content */}
-                        <div style={styles.cardContent}>
-                          {/* Image */}
-                          <div style={styles.imageContainer}>
-                            {appt.salon?.image ? (
-                              <img 
-                                src={appt.salon.image} 
-                                alt={appt.salon?.name || 'Salon'} 
-                                style={styles.image}
-                              />
-                            ) : (
-                              <div style={styles.imagePlaceholder}>
-                                💅
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Details */}
-                          <div style={styles.details}>
-                            {/* Title */}
-                            <h3 style={styles.title}>
-                              {appt.service?.name || 'Prestation'}
-                              {appt.salon?.name && ` - ${appt.salon.name}`}
-                            </h3>
-
-                            {/* Address */}
-                            {appt.salon?.address && (
-                              <div style={styles.info}>
-                                <MapPin size={16} style={styles.icon} />
-                                <span style={styles.infoText}>{appt.salon.address}</span>
-                              </div>
-                            )}
-
-                            {/* Service & Duration */}
-                            <div style={styles.info}>
-                              <Clock size={16} style={styles.icon} />
-                              <span style={styles.infoText}>
-                                {appt.service?.name || 'Service'} • {appt.service?.duration || 30}min
-                              </span>
-                            </div>
-
-                            {/* Price */}
-                            <div style={styles.info}>
-                              <span style={styles.priceIcon}>💶</span>
-                              <span style={styles.price}>{appt.service?.price || 0} €</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <AppointmentCard
+                        key={appt.id}
+                        appointment={appt}
+                        onCancel={cancelAppointment}
+                      />
                     ))}
                   </div>
                 )
@@ -384,151 +235,6 @@ const AccountPage = () => {
 };
 
 const styles = {
-  card: {
-    backgroundColor: '#FFF',
-    borderRadius: '12px',
-    border: '1px solid #E5E7EB',
-    overflow: 'hidden',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-    marginBottom: '1rem',
-  },
-  dateHeader: {
-    backgroundColor: '#F9FAFB',
-    padding: '1rem 1.5rem',
-    fontSize: '1rem',
-    fontWeight: '600',
-    color: '#111827',
-    borderBottom: '1px solid #E5E7EB',
-  },
-  cardContent: {
-    display: 'flex',
-    gap: '1.5rem',
-    padding: '1.5rem',
-  },
-  imageContainer: {
-    flexShrink: 0,
-  },
-  image: {
-    width: '120px',
-    height: '120px',
-    borderRadius: '8px',
-    objectFit: 'cover',
-  },
-  imagePlaceholder: {
-    width: '120px',
-    height: '120px',
-    borderRadius: '8px',
-    backgroundColor: '#F3F4F6',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '3rem',
-  },
-  details: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.75rem',
-  },
-  title: {
-    fontSize: '1.125rem',
-    fontWeight: '600',
-    color: '#111827',
-    margin: 0,
-  },
-  info: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: '0.5rem',
-  },
-  icon: {
-    color: '#6B7280',
-    flexShrink: 0,
-    marginTop: '2px',
-  },
-  priceIcon: {
-    fontSize: '1rem',
-  },
-  infoText: {
-    fontSize: '0.9rem',
-    color: '#6B7280',
-    lineHeight: '1.5',
-  },
-  price: {
-    fontSize: '0.9rem',
-    color: '#111827',
-    fontWeight: '600',
-  },
-  actions: {
-    display: 'flex',
-    gap: '0.75rem',
-    flexWrap: 'wrap',
-    marginTop: '0.5rem',
-  },
-  buttonOutline: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    padding: '0.625rem 1rem',
-    backgroundColor: '#FFF',
-    border: '1px solid #E5E7EB',
-    borderRadius: '8px',
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#6B7280',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  buttonPrimary: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    padding: '0.625rem 1.25rem',
-    backgroundColor: '#111827',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    color: '#FFF',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  notification: {
-    marginTop: '0.5rem',
-    paddingTop: '1rem',
-    borderTop: '1px solid #F3F4F6',
-  },
-  toggleLabel: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    cursor: 'pointer',
-  },
-  toggleInput: {
-    display: 'none',
-  },
-  toggle: {
-    position: 'relative',
-    width: '48px',
-    height: '24px',
-    borderRadius: '12px',
-    transition: 'background-color 0.3s',
-  },
-  toggleCircle: {
-    position: 'absolute',
-    top: '2px',
-    width: '20px',
-    height: '20px',
-    borderRadius: '50%',
-    backgroundColor: '#FFF',
-    transition: 'transform 0.3s',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-  },
-  toggleText: {
-    fontSize: '0.875rem',
-    color: '#6B7280',
-    fontWeight: '500',
-  },
   viewAllButton: {
     width: '100%',
     padding: '0.75rem',

@@ -45,7 +45,7 @@ const NavbarPro = () => {
           className="flex items-center gap-1 cursor-pointer"
           onClick={() => navigate('/')}
         >
-          <span className="text-xl font-black tracking-tighter">PLANITY</span>
+          <span className="text-xl font-black tracking-tighter">P L A N I T Y</span>
           <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Pro</span>
         </div>
 
@@ -62,7 +62,7 @@ const NavbarPro = () => {
             </button>
 
             {isMetierOpen && (
-              <div className="absolute top-full left-0 mt-0 w-150 bg-[#F9F9F9] shadow-2xl rounded-b-3xl p-8 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute top-full left-0 mt-0 w-150 bg-[#F9F9F9] shadow-2xl rounded-b-3xl p-8">
                 <div className="grid grid-cols-3 gap-6">
                   {categories.map((cat) => (
                     <div 
@@ -95,7 +95,7 @@ const NavbarPro = () => {
             </button>
 
             {isSolutionsOpen && (
-              <div className="absolute top-full -left-37.5 w-200 bg-[#F9F9F9] shadow-2xl rounded-b-3xl p-10 grid grid-cols-2 gap-x-12 gap-y-8 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute top-full -left-37.5 w-200 bg-[#F9F9F9] shadow-2xl rounded-b-3xl p-10 grid grid-cols-2 gap-x-12 gap-y-8">
                 {solutions.map((item, index) => (
                   <div key={index} className="group cursor-pointer">
                     <div className="flex items-center gap-2">
@@ -124,7 +124,7 @@ const NavbarPro = () => {
             </button>
 
             {isRessourcesOpen && (
-              <div className="absolute top-full -left-25 w-100 bg-[#F9F9F9] shadow-2xl rounded-b-3xl p-8 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute top-full -left-25 w-100 bg-[#F9F9F9] shadow-2xl rounded-b-3xl p-8">
                 {ressources.map((item, index) => (
                   <div key={index} className="group cursor-pointer py-3 border-b border-gray-200 last:border-0">
                     <h3 className="font-bold text-[15px] text-gray-900 group-hover:text-indigo-600 transition-colors">

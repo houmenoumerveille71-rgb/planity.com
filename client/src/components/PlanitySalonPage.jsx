@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Star } from 'lucide-react';
+import { MapPin, Star, Image as ImageIcon } from 'lucide-react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 
@@ -14,10 +14,13 @@ const PlanitySalonPage = () => {
   const navigate = useNavigate();
   const [salon, setSalon] = useState(null);
   const [availabilities, setAvailabilities] = useState([]);
+  const [gallery, setGallery] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedService, setSelectedService] = useState(null);
   const [activeTab, setActiveTab] = useState('presentation');
   const [showMap, setShowMap] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   // Navigate to booking page when a service is selected
   const handleReserve = () => {
@@ -41,6 +44,13 @@ const PlanitySalonPage = () => {
         if (availResponse.ok) {
           const availData = await availResponse.json();
           setAvailabilities(availData);
+        }
+
+        // Récupérer la galerie photos
+        const galleryResponse = await fetch(`${API_BASE}/salons/${id}/gallery`);
+        if (galleryResponse.ok) {
+          const galleryData = await galleryResponse.json();
+          setGallery(galleryData);
         }
       } catch (error) {
         console.error('Erreur:', error);
@@ -140,7 +150,7 @@ const PlanitySalonPage = () => {
               <div style={styles.rating}>
                 <Star size={16} fill="#FFB800" color="#FFB800" />
                 <span style={styles.ratingText}>4.9 (235 avis)</span>
-                <span style={styles.priceLevel}>€</span>
+                <span style={styles.priceLevel}>FCFA</span>
               </div>
             </div>
             <button style={styles.reserveButton} onClick={handleReserve}>Réserver</button>
@@ -150,19 +160,95 @@ const PlanitySalonPage = () => {
         {/* Gallery */}
         <div style={styles.gallery}>
           <div style={styles.galleryMain}>
-            {salon.image ? (
+            {gallery.find(p => p.isPrimary) || gallery[0] ? (
+              <img 
+                src={(gallery.find(p => p.isPrimary) || gallery[0])?.imageUrl} 
+                alt={salon.name} 
+                style={styles.galleryMainImage}
+                onClick={() => {
+                  const index = gallery.findIndex(p => p.isPrimary) || 0;
+                  setLightboxIndex(index);
+                  setLightboxOpen(true);
+                }}
+              />
+            ) : salon.image ? (
               <img src={salon.image} alt={salon.name} style={styles.galleryMainImage} />
             ) : (
               <div style={styles.galleryPlaceholder}>📷</div>
             )}
           </div>
           <div style={styles.galleryGrid}>
-            <div style={styles.galleryImagePlaceholder}>🪞</div>
-            <div style={styles.galleryImagePlaceholder}>💇</div>
-            <div style={styles.galleryImagePlaceholder}>✨</div>
-            <div style={styles.galleryImagePlaceholder}>💅</div>
+            {gallery.length > 0 ? (
+              gallery.slice(0, 4).map((photo, idx) => (
+                <div 
+                  key={photo.id || idx} 
+                  style={styles.galleryImagePlaceholder}
+                  onClick={() => {
+                    setLightboxIndex(idx);
+                    setLightboxOpen(true);
+                  }}
+                >
+                  <img 
+                    src={photo.imageUrl} 
+                    alt={photo.title || `Photo ${idx + 1}`}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }}
+                  />
+                </div>
+              ))
+            ) : (
+              <>
+                <div style={styles.galleryImagePlaceholder}>🪞</div>
+                <div style={styles.galleryImagePlaceholder}>💇</div>
+                <div style={styles.galleryImagePlaceholder}>✨</div>
+                <div style={styles.galleryImagePlaceholder}>💅</div>
+              </>
+            )}
+            {gallery.length > 4 && (
+              <div 
+                style={{...styles.galleryImagePlaceholder, backgroundColor: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer'}}
+                onClick={() => {
+                  setLightboxIndex(4);
+                  setLightboxOpen(true);
+                }}
+              >
+                <span style={{ fontSize: '24px', fontWeight: 'bold' }}>+{gallery.length - 4}</span>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Lightbox */}
+        {lightboxOpen && gallery.length > 0 && (
+          <div style={styles.lightboxOverlay} onClick={() => setLightboxOpen(false)}>
+            <button 
+              style={styles.lightboxClose}
+              onClick={() => setLightboxOpen(false)}
+            >✕</button>
+            <button 
+              style={styles.lightboxPrev}
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightboxIndex((prev) => (prev > 0 ? prev - 1 : gallery.length - 1));
+              }}
+            >‹</button>
+            <img 
+              src={gallery[lightboxIndex % gallery.length]?.imageUrl} 
+              alt="Gallery"
+              style={styles.lightboxImage}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button 
+              style={styles.lightboxNext}
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightboxIndex((prev) => (prev < gallery.length - 1 ? prev + 1 : 0));
+              }}
+            >›</button>
+            <div style={styles.lightboxCounter}>
+              {lightboxIndex + 1} / {gallery.length}
+            </div>
+          </div>
+        )}
 
       {/* Booking Banner */}
       <div style={styles.bookingBanner}>
@@ -196,7 +282,7 @@ const PlanitySalonPage = () => {
                 </div>
                 <div style={styles.serviceRight}>
                   <div style={styles.serviceDuration}>{service.duration || 30}min</div>
-                  <div style={styles.servicePrice}>{service.price}€</div>
+                  <div style={styles.servicePrice}>{service.price}FCFA</div>
                   <button 
                     style={selectedService?.id === service.id ? {...styles.selectButton, ...styles.selectButtonSelected} : styles.selectButton}
                     onClick={() => {
@@ -820,6 +906,68 @@ const styles = {
     borderRadius: '20px',
     fontSize: '0.875rem',
     color: '#374151',
+  },
+
+  // Lightbox
+  lightboxOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  lightboxImage: {
+    maxWidth: '90%',
+    maxHeight: '90%',
+    objectFit: 'contain',
+  },
+  lightboxClose: {
+    position: 'absolute',
+    top: '20px',
+    right: '20px',
+    background: 'none',
+    border: 'none',
+    color: 'white',
+    fontSize: '32px',
+    cursor: 'pointer',
+    padding: '10px',
+  },
+  lightboxPrev: {
+    position: 'absolute',
+    left: '20px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'none',
+    border: 'none',
+    color: 'white',
+    fontSize: '48px',
+    cursor: 'pointer',
+    padding: '20px',
+  },
+  lightboxNext: {
+    position: 'absolute',
+    right: '20px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'none',
+    border: 'none',
+    color: 'white',
+    fontSize: '48px',
+    cursor: 'pointer',
+    padding: '20px',
+  },
+  lightboxCounter: {
+    position: 'absolute',
+    bottom: '20px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    color: 'white',
+    fontSize: '16px',
   },
 };
 

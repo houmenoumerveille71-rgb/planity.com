@@ -144,12 +144,14 @@ const Hero = () => {
   }, []);
 
   const handleSearch = () => {
+    console.log('handleSearch called with:', { category, location, userLat, userLng });
     const params = new URLSearchParams();
     if (category) params.set('service', category);
     if (location) params.set('ville', location);
     if (userLat) params.set('lat', userLat.toString());
     if (userLng) params.set('lng', userLng.toString());
     
+    console.log('Navigating to:', `/search?${params.toString()}`);
     navigate(`/search?${params.toString()}`);
   };
 

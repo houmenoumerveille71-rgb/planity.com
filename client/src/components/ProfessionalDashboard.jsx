@@ -4,15 +4,16 @@ import {
   Calendar, Users, Scissors, Settings,
   BarChart3, Bell, Plus, Search, LogOut,
   ChevronLeft, ChevronRight, Clock, User, DollarSign, TrendingUp,
-  Trash2, Edit, Mail, Phone, MoreVertical, X, Check
+  Trash2, Edit, Mail, Phone, MoreVertical, X, Check, Ban, Lock, Image
 } from 'lucide-react';
-import { useAuth } from '../AuthContext';
+import { useAuth, isProfessionalUser } from '../AuthContext';
 import PhoneInput from './PhoneInput';
 import AddServiceModal from './AddServiceModal';
 import EditServiceModal from './EditServiceModal';
 import AppointmentModal from './AppointmentModal';
 import ClientList from './ClientList';
 import OpeningHoursManager from './OpeningHoursManager';
+import GalleryManager from './GalleryManager';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -30,6 +31,13 @@ const ProDashboard = () => {
   const [clients, setClients] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Redirect clients to their dashboard
+  useEffect(() => {
+    if (user && !isProfessionalUser(user)) {
+      navigate('/account');
+    }
+  }, [user, navigate]);
   
   // Modals
   const [showAddService, setShowAddService] = useState(false);
@@ -60,12 +68,24 @@ const ProDashboard = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState('week'); // 'day', 'week', 'month'
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [period, setPeriod] = useState('day');
+  
+  // Closed days and blocked slots
+  const [closedDays, setClosedDays] = useState([0, 6]); // 0 = Sunday, 6 = Saturday
+  const [blockedSlots, setBlockedSlots] = useState([]);
+  const [showBlockModal, setShowBlockModal] = useState(false);
+  const [selectedSlotToBlock, setSelectedSlotToBlock] = useState(null);
+  const [showClosedDaysModal, setShowClosedDaysModal] = useState(false);
+
+  // Gallery modal state
+  const [showGallery, setShowGallery] = useState(false);
 
   const menuItems = [
     { name: 'Planning', icon: <Calendar size={20} /> },
     { name: 'Clients', icon: <Users size={20} /> },
     { name: 'Services', icon: <Scissors size={20} /> },
     { name: 'Équipe', icon: <Users size={20} /> },
+    { name: 'Galerie', icon: <Image size={20} /> },
     { name: 'Statistiques', icon: <BarChart3 size={20} /> },
     { name: 'Paramètres', icon: <Settings size={20} /> },
   ];
@@ -174,6 +194,52 @@ const ProDashboard = () => {
   const goToToday = () => {
     setCurrentDate(new Date());
     setSelectedDate(new Date());
+  };
+
+  // Vérifier si un jour est fermé
+  const isDayClosed = (date) => {
+    const dayOfWeek = new Date(date).getDay();
+    return closedDays.includes(dayOfWeek);
+  };
+
+  // Vérifier si un créneau est bloqué
+  const isSlotBlocked = (date, hour) => {
+    const dateStr = new Date(date).toDateString();
+    return blockedSlots.some(slot => 
+      new Date(slot.date).toDateString() === dateStr && 
+      slot.hour === hour
+    );
+  };
+
+  // Bloquer un créneau
+  const blockSlot = (date, hour, reason = '') => {
+    const newBlock = {
+      id: Date.now(),
+      date: new Date(date),
+      hour,
+      reason,
+      createdAt: new Date()
+    };
+    setBlockedSlots([...blockedSlots, newBlock]);
+    setShowBlockModal(false);
+    setSelectedSlotToBlock(null);
+  };
+
+  // Débloquer un créneau
+  const unblockSlot = (blockId) => {
+    setBlockedSlots(blockedSlots.filter(slot => slot.id !== blockId));
+  };
+
+  // Ajouter un jour fermé
+  const addClosedDay = (dayOfWeek) => {
+    if (!closedDays.includes(dayOfWeek)) {
+      setClosedDays([...closedDays, dayOfWeek].sort());
+    }
+  };
+
+  // Retirer un jour fermé
+  const removeClosedDay = (dayOfWeek) => {
+    setClosedDays(closedDays.filter(day => day !== dayOfWeek));
   };
 
   // Obtenir les rendez-vous pour une date spécifique
@@ -331,42 +397,100 @@ const ProDashboard = () => {
   // Rendu du calendrier - Vue jour
   const renderDayView = () => {
     const dayAppointments = getAppointmentsForDate(currentDate);
-    const hours = Array.from({ length: 10 }, (_, i) => i + 8); // 8h à 18h
-
+    const hours = Array.from({ length: 12 }, (_, i) => i + 8); // 8h à 19h
+    const isClosed = isDayClosed(currentDate);
+    
     return (
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <div className="p-4 border-b border-gray-100">
           <h3 className="font-bold text-lg">
             {currentDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
           </h3>
-          <p className="text-sm text-gray-500">{dayAppointments.length} rendez-vous</p>
+          <div className="flex items-center gap-4 mt-1">
+            <p className="text-sm text-gray-500">{dayAppointments.length} rendez-vous</p>
+            {isClosed && (
+              <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium flex items-center gap-1">
+                <Ban size={12} /> Jour fermé
+              </span>
+            )}
+          </div>
         </div>
-        <div className="max-h-125 overflow-y-auto">
-          {hours.map(hour => (
-            <div key={hour} className="flex border-b border-gray-50">
-              <div className="w-16 py-3 px-2 text-xs text-gray-500 text-right border-r border-gray-100">
-                {hour}h00
-              </div>
-              <div className="flex-1 py-1 px-2">
-                {dayAppointments
-                  .filter(apt => new Date(apt.startTime).getHours() === hour)
-                  .map(apt => (
-                    <div
-                      key={apt.id}
-                      onClick={() => { setSelectedAppointment(apt); setShowAppointmentModal(true); }}
-                      className="bg-[#48BB78]/10 border-l-4 border-[#48BB78] p-2 rounded mb-1 cursor-pointer hover:bg-[#48BB78]/20 transition-colors"
-                    >
-                      <p className="font-medium text-sm">
-                        {new Date(apt.startTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                      <p className="text-sm">{apt.user?.name || 'Client'}</p>
-                      <p className="text-xs text-gray-500">{apt.service?.name}</p>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          ))}
-        </div>
+        
+        {isClosed ? (
+          <div className="p-8 text-center">
+            <Ban size={48} className="mx-auto text-gray-300 mb-4" />
+            <p className="text-gray-500">Ce jour est fermé</p>
+          </div>
+        ) : (
+          <div className="max-h-[500px] overflow-y-auto">
+            {hours.map(hour => {
+              const hourAppointments = dayAppointments.filter(apt => new Date(apt.startTime).getHours() === hour);
+              const isBlocked = isSlotBlocked(currentDate, hour);
+              const blockedSlot = blockedSlots.find(slot => 
+                new Date(slot.date).toDateString() === currentDate.toDateString() && 
+                slot.hour === hour
+              );
+              const isOccupied = hourAppointments.length > 0;
+              const isFree = !isOccupied && !isBlocked;
+              
+              return (
+                <div key={hour} className="flex border-b border-gray-50">
+                  <div className={`w-16 py-3 px-2 text-xs text-right border-r border-gray-100 ${isFree ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {hour}h00
+                  </div>
+                  <div className="flex-1 py-1 px-2">
+                    {/* Créneau bloqué */}
+                    {isBlocked && (
+                      <div className="bg-gray-100 border-l-4 border-gray-400 p-2 rounded mb-1 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Lock size={14} className="text-gray-500" />
+                          <div>
+                            <p className="text-xs font-medium text-gray-600">Créneau bloqué</p>
+                            {blockedSlot?.reason && (
+                              <p className="text-xs text-gray-500">{blockedSlot.reason}</p>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => unblockSlot(blockedSlot.id)}
+                          className="p-1 text-gray-400 hover:text-red-500"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    )}
+                    
+                    {/* Créneaux occupés (rendez-vous) */}
+                    {hourAppointments.map(apt => (
+                      <div
+                        key={apt.id}
+                        onClick={() => { setSelectedAppointment(apt); setShowAppointmentModal(true); }}
+                        className="bg-[#48BB78]/10 border-l-4 border-[#48BB78] p-2 rounded mb-1 cursor-pointer hover:bg-[#48BB78]/20 transition-colors"
+                      >
+                        <p className="font-medium text-sm">
+                          {new Date(apt.startTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                        <p className="text-sm">{apt.user?.name || 'Client'}</p>
+                        <p className="text-xs text-gray-500">{apt.service?.name}</p>
+                      </div>
+                    ))}
+                    
+                    {/* Créneau libre */}
+                    {isFree && (
+                      <button
+                        onClick={() => setSelectedSlotToBlock({ date: currentDate, hour, reason: '' })}
+                        className="w-full py-2 text-xs text-gray-400 hover:text-[#48BB78] hover:bg-[#48BB78]/5 rounded transition-colors flex items-center gap-2"
+                      >
+                        <Plus size={12} />
+                        <span>Créneau libre</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   };
@@ -378,38 +502,108 @@ const ProDashboard = () => {
     return (
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <div className="grid grid-cols-7 border-b border-gray-100">
-          {weekDays.map((day, idx) => (
-            <div
-              key={idx}
-              onClick={() => { setCurrentDate(day); setViewMode('day'); }}
-              className={`py-3 text-center cursor-pointer hover:bg-gray-50 ${new Date(day).toDateString() === new Date().toDateString() ? 'bg-[#48BB78]/10' : ''}`}
-            >
-              <p className="text-xs text-gray-500">{DAYS[idx]}</p>
-              <p className={`font-bold ${new Date(day).toDateString() === new Date().toDateString() ? 'text-[#48BB78]' : ''}`}>
-                {new Date(day).getDate()}
-              </p>
-            </div>
-          ))}
+          {weekDays.map((day, idx) => {
+            const isClosed = isDayClosed(day);
+            const dayAppointments = getAppointmentsForDate(day);
+            const isToday = new Date(day).toDateString() === new Date().toDateString();
+            
+            return (
+              <div
+                key={idx}
+                onClick={() => { setCurrentDate(day); setViewMode('day'); }}
+                className={`py-3 text-center cursor-pointer hover:bg-gray-50 ${
+                  isClosed 
+                    ? 'bg-red-50' 
+                    : isToday 
+                      ? 'bg-[#48BB78]/10' 
+                      : ''
+                }`}
+              >
+                <p className={`text-xs ${isClosed ? 'text-red-400' : 'text-gray-500'}`}>{DAYS[idx]}</p>
+                <p className={`font-bold ${
+                  isClosed 
+                    ? 'text-red-400' 
+                    : isToday 
+                      ? 'text-[#48BB78]' 
+                      : ''
+                }`}>
+                  {new Date(day).getDate()}
+                </p>
+                {isClosed && (
+                  <Ban size={14} className="mx-auto text-red-400 mt-1" />
+                )}
+                {!isClosed && dayAppointments.length > 0 && (
+                  <span className="text-xs text-[#48BB78] font-medium">{dayAppointments.length} RDV</span>
+                )}
+              </div>
+            );
+          })}
         </div>
         <div className="grid grid-cols-7">
           {weekDays.map((day, idx) => {
             const dayAppointments = getAppointmentsForDate(day);
+            const isClosed = isDayClosed(day);
+            const hasBlockedSlots = blockedSlots.some(slot => 
+              new Date(slot.date).toDateString() === new Date(day).toDateString()
+            );
+            
             return (
-              <div key={idx} className="min-h-50 border-r border-gray-50 last:border-r-0 p-1">
-                {dayAppointments.slice(0, 3).map(apt => (
-                  <div
-                    key={apt.id}
-                    onClick={() => { setSelectedAppointment(apt); setShowAppointmentModal(true); }}
-                    className="bg-[#48BB78]/10 border-l-2 border-[#48BB78] p-1 rounded mb-1 cursor-pointer hover:bg-[#48BB78]/20 text-xs"
-                  >
-                    <p className="font-medium truncate">
-                      {new Date(apt.startTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                    <p className="truncate">{apt.user?.name || 'Client'}</p>
+              <div 
+                key={idx} 
+                className={`min-h-[300px] border-r border-gray-50 last:border-r-0 p-1 ${
+                  isClosed ? 'bg-red-50/50' : ''
+                }`}
+                onClick={() => { setCurrentDate(day); setViewMode('day'); }}
+              >
+                {isClosed ? (
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-center">
+                      <Ban size={24} className="mx-auto text-gray-300 mb-2" />
+                      <p className="text-xs text-gray-400">Fermé</p>
+                    </div>
                   </div>
-                ))}
-                {dayAppointments.length > 3 && (
-                  <p className="text-xs text-gray-400 text-center">+{dayAppointments.length - 3} autres</p>
+                ) : (
+                  <>
+                    {/* Afficher les créneaux bloqués */}
+                    {blockedSlots
+                      .filter(slot => new Date(slot.date).toDateString() === new Date(day).toDateString())
+                      .slice(0, 2)
+                      .map(slot => (
+                        <div
+                          key={slot.id}
+                          className="bg-gray-100 border-l-2 border-gray-400 p-1 rounded mb-1 text-xs flex items-center gap-1"
+                        >
+                          <Lock size={10} className="text-gray-500" />
+                          <span className="truncate">{slot.hour}:00</span>
+                        </div>
+                      ))}
+                    
+                    {/* Afficher les rendez-vous */}
+                    {dayAppointments.slice(0, 3).map(apt => (
+                      <div
+                        key={apt.id}
+                        onClick={(e) => { e.stopPropagation(); setSelectedAppointment(apt); setShowAppointmentModal(true); }}
+                        className="bg-[#48BB78]/10 border-l-2 border-[#48BB78] p-1 rounded mb-1 cursor-pointer hover:bg-[#48BB78]/20 text-xs"
+                      >
+                        <p className="font-medium truncate">
+                          {new Date(apt.startTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                        <p className="truncate">{apt.user?.name || 'Client'}</p>
+                      </div>
+                    ))}
+                    
+                    {/* Indicateur s'il y a plus de rendez-vous */}
+                    {dayAppointments.length > 3 && (
+                      <p className="text-xs text-gray-400 text-center">+{dayAppointments.length - 3} autres</p>
+                    )}
+                    
+                    {/* Indicateur s'il y a des créneaux bloqués en plus */}
+                    {blockedSlots.filter(slot => new Date(slot.date).toDateString() === new Date(day).toDateString()).length > 2 && (
+                      <p className="text-xs text-gray-400 text-center">
+                        +{blockedSlots.filter(slot => new Date(slot.date).toDateString() === new Date(day).toDateString()).length - 2} bloqués
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
             );
@@ -452,27 +646,61 @@ const ProDashboard = () => {
             }
             const dayAppointments = getAppointmentsForDate(day);
             const isToday = new Date(day).toDateString() === new Date().toDateString();
+            const isClosed = isDayClosed(day);
+            const hasBlockedSlots = blockedSlots.some(slot => 
+              new Date(slot.date).toDateString() === new Date(day).toDateString()
+            );
             
             return (
               <div
                 key={idx}
                 onClick={() => { setCurrentDate(day); setViewMode('day'); }}
-                className={`min-h-25 border-r border-gray-50 last:border-r-0 p-1 cursor-pointer hover:bg-gray-50 ${isToday ? 'bg-[#48BB78]/5' : ''}`}
+                className={`min-h-25 border-r border-gray-50 last:border-r-0 p-1 cursor-pointer hover:bg-gray-50 ${
+                  isClosed 
+                    ? 'bg-red-50' 
+                    : isToday 
+                      ? 'bg-[#48BB78]/5' 
+                      : ''
+                }`}
               >
-                <p className={`text-sm text-right ${isToday ? 'font-bold text-[#48BB78]' : ''}`}>
+                <p className={`text-sm text-right ${
+                  isClosed 
+                    ? 'text-red-400' 
+                    : isToday 
+                      ? 'font-bold text-[#48BB78]' 
+                      : ''
+                }`}>
                   {day.getDate()}
                 </p>
-                {dayAppointments.length > 0 && (
-                  <div className="mt-1">
-                    {dayAppointments.slice(0, 2).map(apt => (
-                      <div key={apt.id} className="bg-[#48BB78]/10 text-[10px] p-0.5 rounded mb-0.5 truncate">
-                        {new Date(apt.startTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} {apt.user?.name?.split(' ')[0]}
-                      </div>
-                    ))}
-                    {dayAppointments.length > 2 && (
-                      <p className="text-[10px] text-gray-400">+{dayAppointments.length - 2}</p>
-                    )}
+                
+                {isClosed ? (
+                  <div className="flex items-center justify-center mt-1">
+                    <Ban size={14} className="text-red-300" />
                   </div>
+                ) : (
+                  <>
+                    {dayAppointments.length > 0 && (
+                      <div className="mt-1">
+                        {dayAppointments.slice(0, 2).map(apt => (
+                          <div key={apt.id} className="bg-[#48BB78]/10 text-[10px] p-0.5 rounded mb-0.5 truncate">
+                            {new Date(apt.startTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} {apt.user?.name?.split(' ')[0]}
+                          </div>
+                        ))}
+                        {dayAppointments.length > 2 && (
+                          <p className="text-[10px] text-gray-400">+{dayAppointments.length - 2}</p>
+                        )}
+                      </div>
+                    )}
+                    
+                    {hasBlockedSlots && !isClosed && (
+                      <div className="mt-1 flex items-center gap-1">
+                        <Lock size={10} className="text-gray-400" />
+                        <span className="text-[10px] text-gray-400">
+                          {blockedSlots.filter(slot => new Date(slot.date).toDateString() === new Date(day).toDateString()).length}
+                        </span>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             );
@@ -484,23 +712,58 @@ const ProDashboard = () => {
 
   const renderPlanning = () => (
     <div className="space-y-6">
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
-          <p className="text-gray-500 text-sm">RDV aujourd'hui</p>
-          <p className="text-2xl font-black">{todayAppointments.length}</p>
+      {/* Gestion du planning */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        {/* Sélecteur de période */}
+        <div className="flex items-center gap-2 bg-white rounded-2xl border border-gray-100 p-1">
+          <button
+            onClick={() => setPeriod('day')}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+              period === 'day' 
+                ? 'bg-[#48BB78] text-white' 
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Jour
+          </button>
+          <button
+            onClick={() => setPeriod('week')}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+              period === 'week' 
+                ? 'bg-[#48BB78] text-white' 
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Semaine
+          </button>
+          <button
+            onClick={() => setPeriod('month')}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+              period === 'month' 
+                ? 'bg-[#48BB78] text-white' 
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Mois
+          </button>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
-          <p className="text-gray-500 text-sm">Revenus aujourd'hui</p>
-          <p className="text-2xl font-black text-[#48BB78]">{todayRevenue} €</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
-          <p className="text-gray-500 text-sm">Ce mois</p>
-          <p className="text-2xl font-black">{monthAppointments.length} RDV</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
-          <p className="text-gray-500 text-sm">Revenus ce mois</p>
-          <p className="text-2xl font-black text-[#48BB78]">{monthRevenue} €</p>
+        
+        {/* Boutons de gestion */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowClosedDaysModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <Ban size={16} />
+            Jours fermés
+          </button>
+          <button
+            onClick={() => setShowBlockModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <Lock size={16} />
+            Bloquer un créneau
+          </button>
         </div>
       </div>
 
@@ -511,9 +774,9 @@ const ProDashboard = () => {
             <ChevronLeft size={20} />
           </button>
           <h2 className="text-xl font-bold">
-            {viewMode === 'day' && MONTHS[currentDate.getMonth()] + ' ' + currentDate.getFullYear()}
-            {viewMode === 'week' && MONTHS[currentDate.getMonth()] + ' ' + currentDate.getFullYear()}
-            {viewMode === 'month' && currentDate.getFullYear()}
+            {viewMode === 'day' && DAYS[currentDate.getDay()] + ' ' + currentDate.getDate() + ' ' + MONTHS[currentDate.getMonth()]}
+            {viewMode === 'week' && 'Semaine du ' + DAYS[new Date(currentDate).getDay()] + ' ' + currentDate.getDate() + ' ' + MONTHS[currentDate.getMonth()]}
+            {viewMode === 'month' && MONTHS[currentDate.getMonth()] + ' ' + currentDate.getFullYear()}
           </h2>
           <button onClick={goToNext} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <ChevronRight size={20} />
@@ -565,7 +828,7 @@ const ProDashboard = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#48BB78]">{apt.service?.price} €</span>
+                    <span className="font-bold text-[#48BB78]">{apt.service?.price} FCFA</span>
                     <MoreVertical size={18} className="text-gray-400" />
                   </div>
                 </div>
@@ -622,7 +885,7 @@ const ProDashboard = () => {
                 <span className="flex items-center gap-1">
                   <Clock size={14} /> {service.duration} min
                 </span>
-                <span className="font-bold text-[#48BB78] text-lg">{service.price} €</span>
+                <span className="font-bold text-[#48BB78] text-lg">{service.price} FCFA</span>
               </div>
             </div>
           ))}
@@ -660,40 +923,154 @@ const ProDashboard = () => {
     </div>
   );
 
-  const renderStats = () => (
+  const renderGallery = () => (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Statistiques</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 bg-[#F0FFF4] rounded-2xl border border-[#C6F6D5]">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-[#48BB78]/20 rounded-lg">
-              <Calendar size={20} className="text-[#48BB78]" />
-            </div>
-            <p className="font-bold text-gray-700">RDV ce mois</p>
-          </div>
-          <p className="text-4xl font-black text-gray-900">{monthAppointments.length}</p>
-        </div>
-        <div className="p-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <DollarSign size={20} className="text-blue-600" />
-            </div>
-            <p className="font-bold text-gray-700">Revenus totaux</p>
-          </div>
-          <p className="text-4xl font-black text-gray-900">{monthRevenue} €</p>
-        </div>
-        <div className="p-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Users size={20} className="text-purple-600" />
-            </div>
-            <p className="font-bold text-gray-700">Clients</p>
-          </div>
-          <p className="text-4xl font-black text-gray-900">{new Set(appointments.map(apt => apt.user?.id)).size}</p>
-        </div>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Galerie Photos</h2>
+        <button 
+          onClick={() => setShowGallery(true)}
+          className="bg-[#48BB78] text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-[#3da368] transition-colors"
+        >
+          <Plus size={18} />
+          Ajouter des photos
+        </button>
+      </div>
+
+      <div className="bg-white rounded-3xl border border-gray-100 p-8">
+        <p className="text-gray-500 text-center mb-4">
+          Gérez les photos de votre salon pour les rendre visibles en ligne
+        </p>
+        <button 
+          onClick={() => setShowGallery(true)}
+          className="mx-auto flex items-center gap-2 bg-[#48BB78] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#3da368] transition-colors"
+        >
+          <Image size={20} />
+          Ouvrir la galerie
+        </button>
       </div>
     </div>
   );
+
+  const renderStats = () => {
+    // Calculer les statistiques selon la période sélectionnée
+    const now = new Date();
+    let startDate, endDate;
+    
+    if (period === 'day') {
+      startDate = new Date(now);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(now);
+      endDate.setHours(23, 59, 59, 999);
+    } else if (period === 'week') {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - startDate.getDay());
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 6);
+      endDate.setHours(23, 59, 59, 999);
+    } else {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    }
+    
+    const periodAppointments = appointments.filter(apt => {
+      const aptDate = new Date(apt.startTime);
+      return aptDate >= startDate && aptDate <= endDate;
+    });
+    
+    const periodRevenue = periodAppointments.reduce((sum, apt) => sum + (apt.service?.price || 0), 0);
+    const upcomingAppointments = appointments.filter(apt => new Date(apt.startTime) > new Date());
+    const todayAppointmentsCount = appointments.filter(apt => 
+      new Date(apt.startTime).toDateString() === new Date().toDateString()
+    ).length;
+    
+    // Calculer l'acompte (30% du prix)
+    const depositsCollected = periodRevenue * 0.3;
+    
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">Statistiques</h2>
+          
+          {/* Sélecteur de période */}
+          <div className="flex items-center gap-2 bg-white rounded-2xl border border-gray-100 p-1">
+            <button
+              onClick={() => setPeriod('day')}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                period === 'day' 
+                  ? 'bg-[#48BB78] text-white' 
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              Jour
+            </button>
+            <button
+              onClick={() => setPeriod('week')}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                period === 'week' 
+                  ? 'bg-[#48BB78] text-white' 
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              Semaine
+            </button>
+            <button
+              onClick={() => setPeriod('month')}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                period === 'month' 
+                  ? 'bg-[#48BB78] text-white' 
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              Mois
+            </button>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {/* Total RDV */}
+          <div className="p-4 bg-white rounded-2xl border border-gray-100">
+            <p className="text-gray-500 text-xs mb-2">Total RDV</p>
+            <p className="text-3xl font-black">{periodAppointments.length}</p>
+          </div>
+          
+          {/* RDV à venir */}
+          <div className="p-4 bg-white rounded-2xl border border-gray-100">
+            <p className="text-gray-500 text-xs mb-2">RDV à venir</p>
+            <p className="text-3xl font-black text-[#48BB78]">{upcomingAppointments.length}</p>
+          </div>
+          
+          {/* RDV du jour */}
+          <div className="p-4 bg-white rounded-2xl border border-gray-100">
+            <p className="text-gray-500 text-xs mb-2">RDV du jour</p>
+            <p className="text-3xl font-black text-blue-600">{todayAppointmentsCount}</p>
+          </div>
+          
+          {/* Chiffre d'affaires */}
+          <div className="p-4 bg-white rounded-2xl border border-gray-100">
+            <p className="text-gray-500 text-xs mb-2">Chiffre d'affaires</p>
+            <p className="text-3xl font-black text-purple-600">{periodRevenue.toFixed(0)} FCFA</p>
+          </div>
+          
+          {/* Acomptes encaissés */}
+          <div className="p-4 bg-white rounded-2xl border border-gray-100">
+            <p className="text-gray-500 text-xs mb-2">Acomptes encaissés</p>
+            <p className="text-3xl font-black text-orange-500">{depositsCollected.toFixed(0)} FCFA</p>
+          </div>
+          
+          {/* Période */}
+          <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+            <p className="text-gray-500 text-xs mb-2">Période</p>
+            <p className="text-lg font-bold text-gray-700">
+              {period === 'day' && 'Aujourd\'hui'}
+              {period === 'week' && 'Cette semaine'}
+              {period === 'month' && 'Ce mois'}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const renderSettings = () => {
     const handleSaveSettings = async () => {
@@ -909,6 +1286,7 @@ const ProDashboard = () => {
       case 'Clients': return renderClients();
       case 'Services': return renderServices();
       case 'Équipe': return renderTeam();
+      case 'Galerie': return renderGallery();
       case 'Statistiques': return renderStats();
       case 'Paramètres': return renderSettings();
       default: return null;
@@ -1006,6 +1384,160 @@ const ProDashboard = () => {
           appointment={selectedAppointment}
           onClose={() => { setShowAppointmentModal(false); setSelectedAppointment(null); }}
           onCancel={handleCancelAppointment}
+        />
+      )}
+      
+      {/* Modal pour gérer les jours fermés */}
+      {showClosedDaysModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="font-bold text-lg">Jours fermés</h3>
+              <button onClick={() => setShowClosedDaysModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              <p className="text-sm text-gray-600">Sélectionnez les jours de la semaine qui sont fermés :</p>
+              <div className="flex flex-wrap gap-2">
+                {['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'].map((day, index) => (
+                  <button
+                    key={day}
+                    onClick={() => closedDays.includes(index) ? removeClosedDay(index) : addClosedDay(index)}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                      closedDays.includes(index)
+                        ? 'bg-red-100 text-red-700 border-2 border-red-300'
+                        : 'bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200'
+                    }`}
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <span className="text-xs text-gray-500 w-full">Jours actuellement fermés :</span>
+                {closedDays.length > 0 ? (
+                  closedDays.map(dayIndex => (
+                    <span key={dayIndex} className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                      {['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'][dayIndex]}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-sm text-gray-500">Aucun jour fermé</span>
+                )}
+              </div>
+            </div>
+            <div className="flex justify-end p-4 border-t">
+              <button
+                onClick={() => setShowClosedDaysModal(false)}
+                className="px-4 py-2 bg-[#48BB78] text-white rounded-xl font-medium hover:bg-[#3da368] transition-colors"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal pour bloquer un créneau */}
+      {showBlockModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="font-bold text-lg">Bloquer un créneau</h3>
+              <button onClick={() => { setShowBlockModal(false); setSelectedSlotToBlock(null); }} className="p-2 hover:bg-gray-100 rounded-lg">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              <p className="text-sm text-gray-600">Sélectionnez la date et l'heure du créneau à bloquer :</p>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                  <input
+                    type="date"
+                    value={selectedSlotToBlock?.date ? new Date(selectedSlotToBlock.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
+                    onChange={(e) => setSelectedSlotToBlock({ ...selectedSlotToBlock, date: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Heure</label>
+                  <select
+                    value={selectedSlotToBlock?.hour || 9}
+                    onChange={(e) => setSelectedSlotToBlock({ ...selectedSlotToBlock, hour: parseInt(e.target.value) })}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl"
+                  >
+                    {Array.from({ length: 12 }, (_, i) => i + 8).map(hour => (
+                      <option key={hour} value={hour}>
+                        {hour}:00 - {hour + 1}:00
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Raison (optionnel)</label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Congés, maintenance..."
+                    value={selectedSlotToBlock?.reason || ''}
+                    onChange={(e) => setSelectedSlotToBlock({ ...selectedSlotToBlock, reason: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl"
+                  />
+                </div>
+              </div>
+              
+              {/* Créneaux bloqués */}
+              {blockedSlots.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Créneaux actuellement bloqués :</p>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {blockedSlots.map(slot => (
+                      <div key={slot.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <div>
+                          <p className="text-sm font-medium">{new Date(slot.date).toLocaleDateString('fr-FR')} - {slot.hour}:00</p>
+                          {slot.reason && <p className="text-xs text-gray-500">{slot.reason}</p>}
+                        </div>
+                        <button
+                          onClick={() => unblockSlot(slot.id)}
+                          className="p-1 text-red-500 hover:bg-red-100 rounded"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 p-4 border-t">
+              <button
+                onClick={() => { setShowBlockModal(false); setSelectedSlotToBlock(null); }}
+                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-xl font-medium transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => {
+                  const date = selectedSlotToBlock?.date || new Date().toISOString().split('T')[0];
+                  const hour = selectedSlotToBlock?.hour || 9;
+                  blockSlot(date, hour, selectedSlotToBlock?.reason);
+                }}
+                className="px-4 py-2 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 transition-colors flex items-center gap-2"
+              >
+                <Lock size={16} />
+                Bloquer le créneau
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal Galerie Photos */}
+      {showGallery && (
+        <GalleryManager 
+          salon={salon}
+          onClose={() => setShowGallery(false)}
         />
       )}
     </div>

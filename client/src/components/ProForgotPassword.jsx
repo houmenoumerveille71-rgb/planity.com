@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check } from 'lucide-react';
+import { useAuth, isProfessionalUser } from '../AuthContext';
 
 const ProForgotPassword = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Redirect clients to their dashboard if already logged in
+  useEffect(() => {
+    if (user && !isProfessionalUser(user)) {
+      navigate('/account');
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,7 +58,7 @@ const ProForgotPassword = () => {
           <span className="text-[10px] font-bold text-[#718096] mt-1 uppercase tracking-widest">Pro</span>
         </div>
 
-        <div className="max-w-[420px] w-full lg:mx-0">
+        <div className="w-full max-w-md lg:mx-0">
           <button 
             onClick={() => navigate('/pro-login')}
             className="flex items-center gap-2 text-gray-500 hover:text-black mb-8 transition-colors"
@@ -131,7 +140,7 @@ const ProForgotPassword = () => {
 
           <ul className="space-y-6 mb-12">
             {[
-              "Plus de 50 000 professionnels de la beauté utilisent Planity en France, Belgique et Allemagne.",
+              "Plus de 50 000 professionnels de la beauté utilisent Planity au Bénin, au Nigeria et en Togo.",
               "Une prise de rendez-vous sans commission 24h/24h",
               "Une plateforme aux 10 millions de visiteurs par mois"
             ].map((text, i) => (

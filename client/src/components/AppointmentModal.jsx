@@ -74,7 +74,7 @@ const AppointmentModal = ({ appointment, onClose, onCancel }) => {
             <DollarSign size={20} className="text-[#48BB78]" />
             <div>
               <p className="text-sm text-gray-500">Prix</p>
-              <p className="font-bold text-[#48BB78]">{appointment.service?.price || 0} €</p>
+              <p className="font-bold text-[#48BB78]">{appointment.service?.price || 0} FCFA</p>
             </div>
           </div>
         </div>

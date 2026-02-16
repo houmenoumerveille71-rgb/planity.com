@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, Star, ChevronLeft, ChevronRight, User } from 'lucide-react';
 import Navbar from './Navbar';
 import Footer from './Footer';
@@ -54,7 +54,13 @@ const generateTimeSlots = (availabilities) => {
 const PlanityBookingPage = () => {
   const { salonId, serviceId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, token } = useAuth();
+  
+  // Mode reschedule (déplacement de rendez-vous)
+  const isReschedule = location.state?.reschedule || false;
+  const rescheduleAppointmentId = location.state?.appointmentId || null;
+  const rescheduleMessage = location.state?.message || '';
   
   const [salon, setSalon] = useState(null);
   const [service, setService] = useState(null);
@@ -220,7 +226,7 @@ const PlanityBookingPage = () => {
     setSelectedTime(time);
   };
 
-  // Confirmer la réservation
+  // Confirmer la réservation ou le déplacement
   const handleConfirmBooking = async () => {
     // Vérifier si l'utilisateur est connecté
     if (!user || !token) {
@@ -239,26 +245,49 @@ const PlanityBookingPage = () => {
       const [hours, minutes] = selectedTime.split(':');
       startTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
       
-      const response = await fetch(`${API_BASE}/appointments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          salonId: parseInt(salonId),
-          serviceId: parseInt(serviceId),
-          startTime: startTime.toISOString(),
-          staffId: selectedStaff === 'sans-preference' ? null : selectedStaff,
-        }),
-      });
-      
-      if (response.ok) {
-        // Rediriger vers la page des rendez-vous
-        navigate('/appointments');
+      if (isReschedule && rescheduleAppointmentId) {
+        // Mode déplacement de rendez-vous - utiliser PATCH
+        const response = await fetch(`${API_BASE}/appointments/${rescheduleAppointmentId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            startTime: startTime.toISOString(),
+          }),
+        });
+        
+        if (response.ok) {
+          // Rediriger vers la page du compte avec message de succès
+          navigate('/account?tab=appointments&message=rdv-deplace');
+        } else {
+          const error = await response.json();
+          alert(error.error || 'Erreur lors du déplacement du rendez-vous');
+        }
       } else {
-        const error = await response.json();
-        alert(error.error || 'Erreur lors de la réservation');
+        // Nouvelle réservation
+        const response = await fetch(`${API_BASE}/appointments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            salonId: parseInt(salonId),
+            serviceId: parseInt(serviceId),
+            startTime: startTime.toISOString(),
+            staffId: selectedStaff === 'sans-preference' ? null : selectedStaff,
+          }),
+        });
+        
+        if (response.ok) {
+          // Rediriger vers la page du compte avec l'onglet rendez-vous
+          navigate('/account?tab=appointments');
+        } else {
+          const error = await response.json();
+          alert(error.error || 'Erreur lors de la réservation');
+        }
       }
     } catch (err) {
       console.error('Erreur:', err);
@@ -342,6 +371,20 @@ const PlanityBookingPage = () => {
     <>
       <Navbar />
       <div style={styles.container}>
+        {/* Message de déplacement de rendez-vous */}
+        {isReschedule && (
+          <div style={styles.rescheduleBanner}>
+            <span style={styles.rescheduleIcon}>📅</span>
+            <span>{rescheduleMessage || 'Déplacement de votre rendez-vous'}</span>
+            <button 
+              style={styles.rescheduleCancel}
+              onClick={() => navigate('/account?tab=appointments')}
+            >
+              Annuler
+            </button>
+          </div>
+        )}
+        
         {/* Salon Header */}
         <div style={styles.salonHeader}>
           <div style={styles.salonHeaderContent}>
@@ -353,7 +396,7 @@ const PlanityBookingPage = () => {
               <Star size={14} fill="#FFB800" color="#FFB800" />
               <span style={styles.rating}>4.9 (245 avis)</span>
               <span style={styles.separator}>·</span>
-              <span style={styles.priceLevel}>€</span>
+              <span style={styles.priceLevel}>FCFA</span>
             </div>
           </div>
         </div>
@@ -370,7 +413,7 @@ const PlanityBookingPage = () => {
                 <div style={styles.serviceDetails}>
                   <span>{service.duration || 30}min</span>
                   <span style={styles.dot}>·</span>
-                  <span style={styles.price}>{service.price}€</span>
+                  <span style={styles.price}>{service.price}FCFA</span>
                 </div>
               </div>
               <button style={styles.editButton} onClick={() => navigate(`/salon/${salonId}`)}>
@@ -507,7 +550,10 @@ const PlanityBookingPage = () => {
                   onClick={handleConfirmBooking}
                   disabled={bookingLoading}
                 >
-                  {bookingLoading ? 'Réservation en cours...' : 'Confirmer la réservation'}
+                  {bookingLoading 
+                    ? (isReschedule ? 'Déplacement en cours...' : 'Réservation en cours...')
+                    : (isReschedule ? 'Confirmer le déplacement' : 'Confirmer la réservation')
+                  }
                 </button>
               </div>
             )}
@@ -525,6 +571,29 @@ const styles = {
     backgroundColor: '#F8F9FA',
     minHeight: '100vh',
     paddingBottom: '3rem',
+  },
+
+  // Reschedule banner
+  rescheduleBanner: {
+    backgroundColor: '#EEF2FF',
+    borderBottom: '1px solid #C7D2FE',
+    padding: '1rem 2rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.75rem',
+  },
+  rescheduleIcon: {
+    fontSize: '1.25rem',
+  },
+  rescheduleCancel: {
+    marginLeft: 'auto',
+    background: 'transparent',
+    border: 'none',
+    color: '#6366F1',
+    cursor: 'pointer',
+    fontSize: '0.875rem',
+    textDecoration: 'underline',
   },
 
   loadingContainer: {

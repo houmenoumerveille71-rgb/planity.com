@@ -33,6 +33,7 @@ model Salon {
   appointments Appointment[]
   availabilities SalonAvailability[]
   invitations Invitation[]
+  gallery    SalonGallery[] @relation("SalonGallery")
 }
 
 // Modèle pour les Disponibilités des Salons
@@ -86,12 +87,14 @@ model Service {
 model Appointment {
   id        Int      @id @default(autoincrement())
   startTime DateTime
+  endTime   DateTime?
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
   serviceId Int
   service   Service  @relation(fields: [serviceId], references: [id])
   salonId   Int
   salon     Salon    @relation(fields: [salonId], references: [id])
+  status    String   @default("pending")
   invoice   Invoice?
 }
 
@@ -102,6 +105,7 @@ model Invoice {
   appointment  Appointment @relation(fields: [appointmentId], references: [id])
   amount       Float
   status       String     @default("unpaid") // paid, unpaid
+  type         String?    @default("deposit") // deposit, full
   stripePaymentIntentId String?
 }
 
@@ -151,4 +155,17 @@ model DemoRequest {
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// Modèle pour la Galerie Photos du Salon
+model SalonGallery {
+  id          Int      @id @default(autoincrement())
+  salonId     Int
+  salon       Salon    @relation("SalonGallery", fields: [salonId], references: [id], onDelete: Cascade)
+  imageUrl    String
+  title       String?   // Titre/description de la photo
+  category    String?   // Categorie: "interieur", "prestation", "equipe", "resultat"
+  isPrimary   Boolean   @default(false)  // Photo principale
+  order       Int       @default(0)       // Ordre d'affichage
+  createdAt   DateTime  @default(now())
 }

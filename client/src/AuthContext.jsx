@@ -4,6 +4,12 @@ const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
+// Helper to check if user is a professional
+export const isProfessionalUser = (user) => {
+  if (!user) return false;
+  return user.role === 'salon_owner' || user.role === 'employee' || user.role === 'admin';
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);

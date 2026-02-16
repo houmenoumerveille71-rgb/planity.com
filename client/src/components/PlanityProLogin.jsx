@@ -1,14 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth, isProfessionalUser } from '../AuthContext';
 
 const PlanityProLogin = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Redirect clients to their dashboard if already logged in
+  useEffect(() => {
+    if (user && !isProfessionalUser(user)) {
+      navigate('/account');
+    }
+  }, [user, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -169,7 +178,7 @@ const PlanityProLogin = () => {
 
           <ul className="space-y-6 mb-12">
             {[
-              "Plus de 50 000 professionnels de la beauté utilisent Planity en France, Belgique et Allemagne.",
+              "Plus de 50 000 professionnels de la beauté utilisent Planity au Bénin, au Nigeria et en Togo.",
               "Une prise de rendez-vous sans commission 24h/24h",
               "Une plateforme aux 10 millions de visiteurs par mois"
             ].map((text, i) => (

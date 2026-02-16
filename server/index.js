@@ -85,25 +85,49 @@ const createTransporter = async () => {
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = process.env.SMTP_PASS;
   
+  console.log('🔍 Configuration SMTP检测:');
+  console.log('   - SMTP_HOST:', smtpHost || 'NON DÉFINI');
+  console.log('   - SMTP_USER:', smtpUser || 'NON DÉFINI');
+  console.log('   - SMTP_PASS:', smtpPass ? 'DÉFINI (caché)' : 'NON DÉFINI');
+  
   if (smtpHost && smtpUser && smtpPass) {
-    transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: parseInt(process.env.SMTP_PORT) || 587,
-      secure: false,
-      tls: { rejectUnauthorized: false },
-      auth: { user: smtpUser, pass: smtpPass },
-    });
-    console.log(`📧 Configuration SMTP: ${smtpHost}`);
+    try {
+      transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: parseInt(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_SECURE === 'true',
+        tls: { rejectUnauthorized: false },
+        auth: { user: smtpUser, pass: smtpPass },
+      });
+      
+      // Tester la connexion
+      await transporter.verify();
+      console.log('✅ Connexion SMTP établie avec succès');
+      console.log(`📧 Serveur email: ${smtpHost}`);
+    } catch (smtpError) {
+      console.error('❌ Erreur connexion SMTP:', smtpError.message);
+      // Fallback vers mode simulation
+      transporter = null;
+    }
   } else {
-    console.log('⚠️ Pas de configuration SMTP - les emails ne seront pas envoyés');
+    console.log('⚠️ Pas de configuration SMTP - les emails seront simulés');
+  }
+  
+  // Créer un dummy transporter si pas de vraie config
+  if (!transporter) {
     transporter = {
       sendMail: async (options) => {
+        console.log('═══════════════════════════════════════════');
         console.log('📧 [EMAIL SIMULÉ] À:', options.to);
         console.log('📧 [EMAIL SIMULÉ] Sujet:', options.subject);
+        console.log('📧 [EMAIL SIMULÉ] Contenu:');
+        console.log(options.html || options.text);
+        console.log('═══════════════════════════════════════════');
         return { messageId: 'simulated-' + Date.now() };
       },
     };
   }
+  
   return transporter;
 };
 
@@ -117,6 +141,7 @@ import authController from './controllers/authController.js';
 import invitationController from './controllers/invitationController.js';
 import salonController from './controllers/salonController.js';
 import appointmentController from './controllers/appointmentController.js';
+import { getGallery, addPhoto, deletePhoto, setPrimary } from './controllers/galleryController.js';
 
 // === ROUTES AUTH ===
 app.post('/api/auth/register', authLimiter, authController.registerValidation, authController.register);
@@ -130,38 +155,22 @@ app.post('/api/auth/pro/register', async (req, res) => {
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) return res.status(400).json({ error: "Email déjà utilisé" });
     
-    let salon = null;
-    if (salonId) {
-      salon = await prisma.salon.findUnique({ where: { id: parseInt(salonId) } });
-      if (!salon) return res.status(400).json({ error: "Salon non trouvé" });
-    }
-    
     const hashedPassword = await bcrypt.hash(password, 10);
-    const role = salon ? 'employee' : 'salon_owner';
     
+    // Créer le compte pro
     const user = await prisma.user.create({
       data: { 
-        email, name, password: hashedPassword, phone: phone || null, role,
+        email, name, password: hashedPassword, phone: phone || null, role: 'salon_owner',
         siret: siret || null, businessType: businessType || null,
         workLocation: workLocation || null, experience: experience || null, workRhythm: workRhythm || null,
       }
     });
     
-    if (salon) {
-      await prisma.salon.update({ where: { id: salon.id }, data: { user: { connect: { id: user.id } } } });
-    } else if (hasSalon && businessType) {
-      const categoryMap = { 'salon': 'Salon de coiffure', 'institut': 'Institut de beauté', 'spa': 'Spa' };
-      await prisma.salon.create({
-        data: {
-          name: `${businessType.charAt(0).toUpperCase() + businessType.slice(1)} de ${name}`,
-          address: '', category: categoryMap[businessType] || 'Autre',
-          user: { connect: { id: user.id } }, validationMode: 'auto', depositRequired: true, cancellationDelay: '24', openingHours: '9h-19h',
-        }
-      });
-    }
-    
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
-    res.status(201).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    res.status(201).json({ 
+      token, 
+      user: { id: user.id, name: user.name, email: user.email, role: user.role }
+    });
   } catch (error) {
     console.error('Erreur inscription pro:', error);
     res.status(400).json({ error: "Erreur lors de l'inscription" });
@@ -369,6 +378,12 @@ app.get('/api/salons/:id/availabilities', async (req, res) => {
   }
 });
 
+// === ROUTES GALERIE PHOTOS ===
+app.get('/api/salons/:id/gallery', getGallery);
+app.post('/api/salons/:id/gallery', invitationController.authenticateToken, upload.none(), addPhoto);
+app.delete('/api/gallery/:id', invitationController.authenticateToken, deletePhoto);
+app.patch('/api/gallery/:id/primary', invitationController.authenticateToken, setPrimary);
+
 app.put('/api/salons/:id/availabilities', invitationController.authenticateToken, async (req, res) => {
   const salonId = parseInt(req.params.id);
   const { availabilities } = req.body;
@@ -524,26 +539,65 @@ app.delete('/api/appointments/:id', invitationController.authenticateToken, asyn
     
     const salon = await prisma.salon.findUnique({ where: { id: appointment.salonId } });
     
-    if (!appointment.userId !== req.user.id && salon.userId !== req.user.id && req.user.role !== 'admin') {
+    // Vérification d'autorisation
+    const isOwner = appointment.userId === req.user.id;
+    const isSalonOwner = salon.userId === req.user.id;
+    const isAdmin = req.user.role === 'admin';
+    
+    if (!isOwner && !isSalonOwner && !isAdmin) {
       return res.status(403).json({ error: "Non autorisé" });
     }
     
-    const now = new Date();
-    const appointmentStart = new Date(appointment.startTime);
-    const hoursUntilAppointment = (appointmentStart - now) / (1000 * 60 * 60);
-    
-    if (hoursUntilAppointment < parseInt(salon.cancellationDelay) && req.user.role !== 'admin') {
-      return res.status(400).json({ error: `Impossible d'annuler moins de ${salon.cancellationDelay}h à l'avance` });
-    }
-    
+    // Mise à jour du statut du rendez-vous
     await prisma.appointment.update({
       where: { id: appointment.id },
       data: { status: 'cancelled' },
     });
-    
     res.json({ message: "Rendez-vous annulé" });
   } catch (error) {
     res.status(500).json({ error: "Erreur lors de l'annulation" });
+  }
+});
+
+// Modifier/reprogrammer un rendez-vous
+app.patch('/api/appointments/:id', invitationController.authenticateToken, async (req, res) => {
+  try {
+    const { startTime } = req.body;
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: parseInt(req.params.id) },
+      include: { salon: true, service: true }
+    });
+    
+    if (!appointment) return res.status(404).json({ error: "Rendez-vous non trouvé" });
+    
+    const salon = await prisma.salon.findUnique({ where: { id: appointment.salonId } });
+    
+    // Vérification d'autorisation
+    const isOwner = appointment.userId === req.user.id;
+    const isSalonOwner = salon.userId === req.user.id;
+    const isAdmin = req.user.role === 'admin';
+    
+    if (!isOwner && !isSalonOwner && !isAdmin) {
+      return res.status(403).json({ error: "Non autorisé" });
+    }
+    
+    // Mise à jour de la date du rendez-vous
+    const updatedAppointment = await prisma.appointment.update({
+      where: { id: appointment.id },
+      data: {
+        startTime: new Date(startTime),
+        endTime: new Date(new Date(startTime).getTime() + appointment.service.duration * 60000)
+      },
+      include: {
+        service: true,
+        salon: { select: { name: true, address: true, image: true } }
+      }
+    });
+    
+    res.json(updatedAppointment);
+  } catch (error) {
+    console.error('Erreur modification RDV:', error);
+    res.status(500).json({ error: "Erreur lors de la modification" });
   }
 });
 
@@ -739,6 +793,69 @@ app.put('/api/proches/:id', invitationController.authenticateToken, async (req, 
     res.json(proche);
   } catch (error) {
     res.status(500).json({ error: "Erreur lors de la mise à jour du proche" });
+  }
+});
+
+// Récupérer le salon de l'utilisateur connecté (pour vérification)
+app.get('/api/admin/salons', invitationController.authenticateToken, async (req, res) => {
+  try {
+    const salon = await prisma.salon.findFirst({
+      where: { userId: req.user.id }
+    });
+    res.json(salon);
+  } catch (error) {
+    res.status(500).json({ error: "Erreur lors de la récupération" });
+  }
+});
+
+app.post('/api/admin/salons', invitationController.authenticateToken, upload.single('image'), async (req, res) => {
+  try {
+    // Temporairement retiré pour permettre la création de salon sans rôle spécifique
+    // if (req.user.role !== 'salon_owner') return res.status(403).json({ error: "Accès réservé aux propriétaires" });
+    
+    // Vérifier si l'utilisateur a déjà un salon
+    const existingSalon = await prisma.salon.findFirst({ where: { userId: req.user.id } });
+    if (existingSalon) return res.status(400).json({ error: "Vous avez déjà un salon", salonId: existingSalon.id });
+    
+    const { name, address, city, category, description, validationMode, depositRequired, cancellationDelay, openingHours } = req.body;
+    
+    // Gérer l'image
+    let imageUrl = null;
+    if (req.file) {
+      try {
+        const uploadResult = await cloudinary.uploader.upload(
+          `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`,
+          { folder: 'salons' }
+        );
+        imageUrl = uploadResult.secure_url;
+      } catch (uploadError) {
+        console.error('Erreur upload Cloudinary:', uploadError);
+        imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      }
+    } else if (req.body.image && typeof req.body.image === 'string' && req.body.image.startsWith('data:')) {
+      imageUrl = req.body.image;
+    }
+    
+    const salon = await prisma.salon.create({
+      data: {
+        name,
+        address: address || '',
+        city: city || '',
+        category: category || 'salon',
+        description: description || '',
+        image: imageUrl,
+        validationMode: validationMode || 'auto',
+        depositRequired: depositRequired === 'true' || depositRequired === true,
+        cancellationDelay: cancellationDelay || '24',
+        userId: req.user.id,
+        openingHours: openingHours || '{"lundi":{"open":"09:00","close":"19:00","enabled":true},"mardi":{"open":"09:00","close":"19:00","enabled":true},"mercredi":{"open":"09:00","close":"19:00","enabled":true},"jeudi":{"open":"09:00","close":"19:00","enabled":true},"vendredi":{"open":"09:00","close":"19:00","enabled":true},"samedi":{"open":"09:00","close":"19:00","enabled":false},"dimanche":{"open":"00:00","close":"00:00","enabled":false}}',
+      }
+    });
+    
+    res.status(201).json({ message: "Salon créé avec succès", salon });
+  } catch (error) {
+    console.error('Erreur création salon:', error);
+    res.status(500).json({ error: "Erreur lors de la création du salon" });
   }
 });
 
@@ -1112,12 +1229,41 @@ app.get('/api/professional/clients/:id', invitationController.authenticateToken,
 // === ROUTES DEMO REQUESTS (Formulaire ETP) ===
 app.post('/api/demo-requests', async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, contactName, salonName, salonType, phone, hasLocal, city } = req.body;
     const existingRequest = await prisma.demoRequest.findFirst({ where: { email } });
     if (existingRequest) return res.status(400).json({ error: "Demande déjà existante pour cet email" });
     
     const demoRequest = await prisma.demoRequest.create({ data: { ...req.body, status: 'pending' } });
     console.log(`📋 Nouvelle demande de démo de ${email}`);
+    
+    // Envoyer email de confirmation au client
+    try {
+      await transporter.sendMail({
+        from: process.env.EMAIL_FROM || 'no-reply@planity.com',
+        to: email,
+        subject: 'Confirmation de votre demande de démo - Planity',
+        html: `
+          <h1>Merci pour votre intérêt, ${contactName || 'cher client'} !</h1>
+          <p>Nous avons bien reçu votre demande de démo pour votre salon <strong>${salonName || 'N/A'}</strong>.</p>
+          <p>Notre équipe commerciale va vous contacter sous 24h pour planifier votre démonstration personnalisée.</p>
+          
+          <h2>Récapitulatif de votre demande :</h2>
+          <ul>
+            <li><strong>Type d'établissement:</strong> ${salonType || 'N/A'}</li>
+            <li><strong>Ville:</strong> ${city || 'N/A'}</li>
+            <li><strong>Téléphone:</strong> ${phone || 'N/A'}</li>
+            <li><strong>Vous disposez d'un local:</strong> ${hasLocal ? 'Oui' : 'Non'}</li>
+          </ul>
+          
+          <p>À très bientôt sur Planity !</p>
+          <p>L'équipe Planity</p>
+        `
+      });
+      console.log(`📧 Email de confirmation envoyé à ${email}`);
+    } catch (emailError) {
+      console.error('Erreur envoi email confirmation:', emailError);
+    }
+    
     res.status(201).json({ message: "Demande enregistrée", requestId: demoRequest.id });
   } catch (error) {
     console.error('Erreur:', error);
@@ -1185,10 +1331,13 @@ app.post('/api/demo-requests/:id/accept', invitationController.requireAdmin, asy
         },
       });
     } else {
-      // Mettre à jour le mot de passe
+      // Mettre à jour le mot de passe et le rôle
       await prisma.user.update({
         where: { id: user.id },
-        data: { password: hashedPassword },
+        data: { 
+          password: hashedPassword,
+          role: 'salon_owner'
+        },
       });
     }
     
@@ -1198,6 +1347,7 @@ app.post('/api/demo-requests/:id/accept', invitationController.requireAdmin, asy
     console.log(`   - Local: ${request.hasLocal ? 'Oui' : 'Non'}`);
     
     // Envoyer email au pro avec ses identifiants et lien pour compléter son inscription
+    console.log(`📧 Tentative d'envoi d'email à ${request.email}...`);
     try {
       const info = await transporter.sendMail({
         from: process.env.EMAIL_FROM || 'no-reply@planity.com',
@@ -1212,7 +1362,7 @@ app.post('/api/demo-requests/:id/accept', invitationController.requireAdmin, asy
           <p><strong>Email:</strong> ${request.email}</p>
           <p><strong>Mot de passe temporaire:</strong> ${tempPassword}</p>
           
-          <p><a href="http://localhost:5173/pro-login">Cliquez ici pour vous connecter</a></p>
+          <p><a href="http://localhost:5174/pro-login">Cliquez ici pour vous connecter</a></p>
           
           <p><strong>Próchaines étapes pour mettre votre salon en ligne :</strong></p>
           <ol>
@@ -1225,9 +1375,9 @@ app.post('/api/demo-requests/:id/accept', invitationController.requireAdmin, asy
           <p>Une fois ces étapes complétées, votre salon sera mis en ligne selon la règle de publication choisie.</p>
         `,
       });
-      console.log(`📧 Email d'approbation envoyé à ${request.email}:`, info.messageId);
+      console.log(`✅ Email d'approbation envoyé à ${request.email}:`, info.messageId);
     } catch (emailError) {
-      console.error('Erreur envoi email approbation:', emailError);
+      console.error('❌ Erreur envoi email approbation:', emailError.message);
     }
     
     // Mettre à jour le statut de la demande (NE PAS créer le salon automatiquement)
@@ -1433,7 +1583,7 @@ app.patch('/api/demo-requests/:id/finalize', invitationController.requireAdmin, 
           <p>Votre compte Planity Pro a été créé.</p>
           <p><strong>Email:</strong> ${request.email}</p>
           <p><strong>Mot de passe temporaire:</strong> ${tempPassword}</p>
-          <p><a href="http://localhost:5173/pro-login">Cliquez ici pour vous connecter</a></p>
+          <p><a href="http://localhost:5174/pro-login">Cliquez ici pour vous connecter</a></p>
           <p>Nous vous recommandons de changer votre mot de passe après première connexion.</p>
         `,
       });
@@ -1700,7 +1850,10 @@ app.post('/api/create-payment-intent', async (req, res) => {
       }
       
       const appointments = await prisma.appointment.findMany({
-        where,
+        where: {
+          ...where,
+          userId: where.userId || undefined,
+        },
         include: {
           user: { select: { name: true, email: true, phone: true } },
           service: true,
@@ -1712,13 +1865,13 @@ app.post('/api/create-payment-intent', async (req, res) => {
       
       const formatted = appointments.map(apt => ({
         id: apt.id,
-        client: apt.user.name,
-        clientEmail: apt.user.email,
-        clientPhone: apt.user.phone || 'Non fourni',
-        salon: apt.salon.name,
-        service: apt.service.name,
-        date: apt.startTime.toLocaleDateString('fr-FR'),
-        time: apt.startTime.toTimeString().substring(0, 5),
+        client: apt.user?.name || 'Client inconnu',
+        clientEmail: apt.user?.email || 'Non fourni',
+        clientPhone: apt.user?.phone || 'Non fourni',
+        salon: apt.salon?.name || 'Salon inconnu',
+        service: apt.service?.name || 'Service inconnu',
+        date: apt.startTime?.toLocaleDateString('fr-FR') || 'Date inconnue',
+        time: apt.startTime?.toTimeString().substring(0, 5) || 'Heure inconnue',
         price: apt.service.price,
         status: apt.status || 'pending',
         paid: apt.invoice?.status === 'paid',
@@ -1767,6 +1920,11 @@ app.post('/api/create-payment-intent', async (req, res) => {
   app.get('/api/admin/payments', invitationController.requireAdmin, async (req, res) => {
     try {
       const invoices = await prisma.invoice.findMany({
+        where: {
+          appointment: {
+            userId: undefined
+          }
+        },
         include: {
           appointment: {
             include: {
@@ -1783,9 +1941,9 @@ app.post('/api/create-payment-intent', async (req, res) => {
         id: inv.id,
         type: inv.status === 'paid' ? 'Paiement complet' : 'Acompte',
         amount: inv.amount,
-        salon: inv.appointment.salon.name,
-        client: inv.appointment.user.name,
-        date: inv.appointment.startTime.toLocaleDateString('fr-FR'),
+        salon: inv.appointment?.salon?.name || 'Salon inconnu',
+        client: inv.appointment?.user?.name || 'Client inconnu',
+        date: inv.appointment?.startTime?.toLocaleDateString('fr-FR') || 'Date inconnue',
         status: inv.status === 'paid' ? 'completed' : 'pending',
       }));
       
@@ -2071,6 +2229,37 @@ app.post('/api/create-payment-intent', async (req, res) => {
   });
 
   // === FIN DES ROUTES ADMIN ===
+
+  // Promouvoir un utilisateur professionnel en salon_owner (pour approve manuelle)
+  app.post('/api/admin/promote-user', invitationController.requireAdmin, async (req, res) => {
+    try {
+      const { userId, newRole } = req.body;
+      
+      if (!userId || !newRole) {
+        return res.status(400).json({ error: 'userId et newRole requis' });
+      }
+      
+      const user = await prisma.user.findUnique({ where: { id: parseInt(userId) } });
+      
+      if (!user) {
+        return res.status(404).json({ error: 'Utilisateur non trouvé' });
+      }
+      
+      const updatedUser = await prisma.user.update({
+        where: { id: parseInt(userId) },
+        data: { role: newRole }
+      });
+      
+      console.log(`✅ Utilisateur ${updatedUser.email} promu vers ${newRole}`);
+      res.json({ 
+        message: `Utilisateur promu vers ${newRole}`,
+        user: { id: updatedUser.id, email: updatedUser.email, role: updatedUser.role }
+      });
+    } catch (error) {
+      console.error('Erreur lors de la promotion:', error);
+      res.status(500).json({ error: 'Erreur lors de la promotion' });
+    }
+  });
 
   // Démarrer le serveur
 app.listen(PORT, () => {

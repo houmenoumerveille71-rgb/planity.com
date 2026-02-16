@@ -1,8 +1,20 @@
-﻿import React from 'react';
+﻿import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth, isProfessionalUser } from '../AuthContext';
 
 const ProfessionalLanding = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Allow both clients and professionals to view this page
+  // Clients can explore the pro offer, professionals can access their dashboard
+  useEffect(() => {
+    // Only redirect if user is a professional
+    if (user && isProfessionalUser(user)) {
+      navigate('/professional/dashboard');
+    }
+    // Don't redirect clients - let them see the professional landing page
+  }, [user, navigate]);
 
   return (
     <div className="bg-white min-h-screen flex flex-col items-center pt-16 px-4">
@@ -38,7 +50,7 @@ const ProfessionalLanding = () => {
 
         <div className="space-y-4">
           <button
-            onClick={() => navigate('/pro-landing')}
+            onClick={() => navigate('/pro-register')}
             className="group flex items-center w-full p-6 border border-blue-600/30 rounded-lg hover:bg-blue-50/40 transition-all duration-200"
           >
             <div className="shrink-0 w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mr-6">

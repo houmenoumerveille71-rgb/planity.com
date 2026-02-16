@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../AuthContext';
+import { useAuth, isProfessionalUser } from '../AuthContext';
 import AddProcheModal from './AddProcheModal';
 import EditProcheModal from './EditProcheModal';
 import ProcheDetail from './ProcheDetail';
@@ -9,12 +9,19 @@ import Nav from './Navbar';
 import Footer from './Footer';
 
 const MesProches = () => {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingProche, setEditingProche] = useState(null);
   const [proches, setProches] = useState([]);
+
+  // Redirect professionals to their dashboard
+  useEffect(() => {
+    if (user && isProfessionalUser(user)) {
+      navigate('/professional/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleLogout = () => {
     logout();

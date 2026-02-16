@@ -47,7 +47,9 @@ export const createAppointment = async (req, res) => {
         userId,
         serviceId,
         salonId,
-        startTime: new Date(startTime)
+        startTime: new Date(startTime),
+        endTime: new Date(new Date(startTime).getTime() + service.duration * 60000),
+        status: 'pending'
       },
       include: {
         service: true,
@@ -103,7 +105,7 @@ export const getSalonAppointments = async (req, res) => {
   }
 };
 
-// Annuler rendez-vous
+// Annuler rendez-vous (marquer comme annulé)
 export const cancelAppointment = async (req, res) => {
   const { id } = req.params;
   const userId = req.user.id;
@@ -126,10 +128,64 @@ export const cancelAppointment = async (req, res) => {
       return res.status(403).json({ error: "Non autorisé" });
     }
     
-    await prisma.appointment.delete({ where: { id: parseInt(id) } });
+    // Marquer comme annulé au lieu de supprimer
+    await prisma.appointment.update({
+      where: { id: parseInt(id) },
+      data: { status: 'cancelled' }
+    });
+    
     res.json({ message: "Rendez-vous annulé" });
   } catch (error) {
-    res.status(500).json({ error: "Erreur annulation" });
+    console.error('Erreur annulation:', error);
+    res.status(500).json({ error: "Erreur lors de l'annulation" });
+  }
+};
+
+// Modifier rendez-vous (reprogrammer)
+export const updateAppointment = async (req, res) => {
+  const { id } = req.params;
+  const { startTime } = req.body;
+  const userId = req.user.id;
+  
+  try {
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: parseInt(id) }
+    });
+    
+    if (!appointment) {
+      return res.status(404).json({ error: "Rendez-vous non trouvé" });
+    }
+    
+    // Vérifier authorization
+    const salon = await prisma.salon.findUnique({
+      where: { id: appointment.salonId }
+    });
+    
+    if (appointment.userId !== userId && salon.userId !== userId) {
+      return res.status(403).json({ error: "Non autorisé" });
+    }
+    
+    // Récupérer le service pour calculer la nouvelle date de fin
+    const service = await prisma.service.findUnique({
+      where: { id: appointment.serviceId }
+    });
+    
+    const updatedAppointment = await prisma.appointment.update({
+      where: { id: parseInt(id) },
+      data: {
+        startTime: new Date(startTime),
+        endTime: new Date(new Date(startTime).getTime() + service.duration * 60000)
+      },
+      include: {
+        service: true,
+        salon: { select: { name: true, address: true, image: true } }
+      }
+    });
+    
+    res.json(updatedAppointment);
+  } catch (error) {
+    console.error('Erreur modification RDV:', error);
+    res.status(500).json({ error: "Erreur lors de la modification du rendez-vous" });
   }
 };
 
@@ -152,4 +208,4 @@ export const createInvoice = async (req, res) => {
   }
 };
 
-export default { createAppointment, getUserAppointments, getSalonAppointments, cancelAppointment, createInvoice, appointmentValidation };
+export default { createAppointment, getUserAppointments, getSalonAppointments, cancelAppointment, updateAppointment, createInvoice, appointmentValidation };

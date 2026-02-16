@@ -29,7 +29,7 @@ const PlanityStatsSection = () => {
       label: 'Pris toutes les secondes'
     },
     {
-      value: '> 5 milliards €',
+      value: '> 5 milliards FCFA',
       label: 'De rendez-vous vendus'
     }
   ];

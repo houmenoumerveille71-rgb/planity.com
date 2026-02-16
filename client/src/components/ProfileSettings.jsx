@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { EyeOff, Upload, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../AuthContext';
+import { useAuth, isProfessionalUser } from '../AuthContext';
 import Nav from './Navbar';
 import Footer from './Footer';
 import PhoneInput from './PhoneInput';
@@ -11,6 +11,23 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api
 const ProfileSettings = () => {
   const { user, token, setUser, logout } = useAuth();
   const navigate = useNavigate();
+  
+  // Rediriger vers le dashboard admin si c'est un admin
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      navigate('/admin/dashboard');
+      return;
+    }
+    // Rediriger les professionnels vers leur dashboard
+    if (user && isProfessionalUser(user)) {
+      navigate('/professional/dashboard');
+    }
+  }, [user, navigate]);
+  
+  // Ne pas afficher si pas d'utilisateur, si admin ou si professionnel
+  if (!user || isProfessionalUser(user) || user.role === 'admin') {
+    return null;
+  }
   
   const handleLogout = () => {
     logout();

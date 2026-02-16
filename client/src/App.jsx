@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './components/Home';
-import Login from './components/login';
+import Login from './components/Login';
 import Nav from './components/Navbar';
 import Appointments from './components/Appointments';
 import Analytics from './components/Analytics';
@@ -12,7 +12,6 @@ import { AuthProvider } from './AuthContext';
 import SearchPage from './components/SearchPage';
 import SearchResults from './components/SearchResults';
 import Footer from './components/Footer';
-import Profile from './components/Profile';
 import ProfessionalAccess from './components/ProfessionalAccess';
 import ProfessionalDashboard from './components/ProfessionalDashboard';
 import ProfessionalLanding from './components/ProfessionalLanding';
@@ -65,15 +64,6 @@ function App() {
             <>
               <Nav />
               <Appointments />
-              <Footer />
-            </>
-          } />
-
-          {/* Page de profil */}
-          <Route path="/profile" element={
-            <>
-              <Nav />
-              <Profile />
               <Footer />
             </>
           } />
@@ -216,6 +206,11 @@ function App() {
 
           {/* Page admin login */}
           <Route path="/admin/login" element={
+            <AdminLogin />
+          } />
+
+          {/* Page admin login (alternative) */}
+          <Route path="/admin-login" element={
             <AdminLogin />
           } />
 

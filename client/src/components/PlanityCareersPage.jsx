@@ -48,12 +48,12 @@ const PlanityCareersPage = () => {
   const jobs = [
     {
       title: 'Sales Development Lead',
-      location: 'Paris, France',
+      location: 'Cotonou, Bénin',
       type: 'CDI'
     },
     {
       title: 'Développeur Full Stack (React + Ruby)',
-      location: 'Paris, France',
+      location: 'Cotonou, Bénin',
       type: 'CDI'
     }
   ];
@@ -220,7 +220,7 @@ const PlanityCareersPage = () => {
       <div style={styles.mapSection}>
         <div style={styles.mapPlaceholder}>
           <div style={styles.mapMarker}>📍</div>
-          <p style={styles.mapText}>Paris, France</p>
+          <p style={styles.mapText}>Cotonou, Bénin</p>
         </div>
       </div>
 

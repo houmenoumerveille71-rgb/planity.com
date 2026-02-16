@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth, isProfessionalUser } from '../AuthContext';
 
 const PlanityProRegister = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -11,52 +13,31 @@ const PlanityProRegister = () => {
   const [loading, setLoading] = useState(false);
   const [acceptedCGV, setAcceptedCGV] = useState(false);
   const [email, setEmail] = useState('');
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [verifyingEmail, setVerifyingEmail] = useState(false);
-  const [salonInfo, setSalonInfo] = useState(null);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+
+  // Redirect clients to their dashboard if already logged in
+  useEffect(() => {
+    if (user && !isProfessionalUser(user)) {
+      navigate('/account');
+    }
+  }, [user, navigate]);
 
   // Récupérer les données du parcours d'inscription stockées
   const onboardingData = JSON.parse(localStorage.getItem('pro_onboarding_data') || '{}');
 
-  // Initialiser l'email depuis les données onboarding
+  // Initialiser les données depuis les données onboarding
   useEffect(() => {
+    if (onboardingData.gerant) {
+      setName(onboardingData.gerant);
+    }
+    if (onboardingData.telephone) {
+      setPhone(onboardingData.telephone);
+    }
     if (onboardingData.email) {
       setEmail(onboardingData.email);
     }
   }, []);
-
-  // Vérifier si l'email appartient à un salon existant
-  const verifyEmail = async () => {
-    if (!email) {
-      setError('Veuillez entrer votre adresse email');
-      return;
-    }
-    
-    setVerifyingEmail(true);
-    setError('');
-    
-    try {
-      const response = await fetch('http://localhost:5000/api/auth/verify-pro-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      
-      const data = await response.json();
-      
-      if (data.verified) {
-        setEmailVerified(true);
-        setSalonInfo(data.salon);
-      } else {
-        setEmailVerified(false);
-        setSalonInfo(null);
-      }
-    } catch (err) {
-      setError('Erreur lors de la vérification de l\'email');
-    } finally {
-      setVerifyingEmail(false);
-    }
-  };
 
   // Critères de validation du mot de passe
   const validations = {
@@ -67,17 +48,20 @@ const PlanityProRegister = () => {
 
   const isPasswordValid = validations.length && validations.letter && validations.special;
   const doPasswordsMatch = password === confirmPassword && confirmPassword.length > 0;
+  const isFormValid = email && name && isPasswordValid && doPasswordsMatch && acceptedCGV;
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Vérifier d'abord si l'email est vérifié (sauf si déjà vérifié)
-    if (!emailVerified && !verifyingEmail) {
-      await verifyEmail();
-      if (!emailVerified && !salonInfo) {
-        return; // La vérification a échoué, ne pas continuer
-      }
+    if (!email) {
+      setError('Veuillez entrer votre adresse email');
+      return;
+    }
+
+    if (!name) {
+      setError('Veuillez entrer votre nom');
+      return;
     }
 
     if (!isPasswordValid) {
@@ -106,15 +90,9 @@ const PlanityProRegister = () => {
         body: JSON.stringify({
           email: email,
           password: password,
-          name: onboardingData.gerant || '',
-          phone: onboardingData.telephone || '',
-          businessType: onboardingData.step >= 1 ? 'salon' : null,
-          workLocation: onboardingData.lieuExercice || null,
-          experience: onboardingData.anciennete || null,
-          workRhythm: onboardingData.rythme || null,
+          name: name,
+          phone: phone || '',
           siret: onboardingData.siret || null,
-          hasSalon: onboardingData.step >= 2,
-          salonId: salonInfo?.id || null, // ID du salon existant si vérifié
         }),
       });
 
@@ -128,8 +106,8 @@ const PlanityProRegister = () => {
         // Nettoyer les données d'inscription
         localStorage.removeItem('pro_onboarding_data');
         
-        // Rediriger vers le tableau de bord professionnel
-        navigate('/professional/dashboard');
+        // Rediriger vers la création du salon
+        navigate('/pro-salon-setup');
       } else {
         setError(data.error || 'Erreur lors de l\'inscription');
       }
@@ -167,62 +145,40 @@ const PlanityProRegister = () => {
           )}
 
           <form onSubmit={handleRegister} className="space-y-5">
-              {/* Email avec vérification */}
+              {/* Nom */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-bold text-gray-700">Nom complet</label>
+                <input 
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ex: Antoine Martin"
+                  className="w-full p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#48BB78] outline-none transition-all shadow-sm"
+                />
+              </div>
+
+              {/* Email */}
               <div className="space-y-1.5">
                 <label className="text-sm font-bold text-gray-700">Adresse email professionnelle</label>
-                <div className="relative">
-                  <input 
-                    type="email" 
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setEmailVerified(false);
-                      setSalonInfo(null);
-                    }}
-                    placeholder="romaricsoton@gmail.com"
-                    className="w-full p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#48BB78] outline-none transition-all shadow-sm pr-20"
-                  />
-                  {!verifyingEmail && !emailVerified && !salonInfo && (
-                    <button
-                      type="button"
-                      onClick={verifyEmail}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-[#48BB78] hover:underline px-2 py-1"
-                    >
-                      Vérifier
-                    </button>
-                  )}
-                  {verifyingEmail && (
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">
-                      Vérification...
-                    </span>
-                  )}
-                </div>
-                
-                {/* Message de vérification */}
-                {emailVerified && salonInfo && (
-                  <div className="p-3 bg-[#EBFBF2] border border-[#48BB78] rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Check size={16} className="text-[#48BB78]" />
-                      <span className="text-sm font-medium text-[#2F855A]">
-                        Email vérifié : rattaché à <strong>{salonInfo.name}</strong>
-                      </span>
-                    </div>
-                  </div>
-                )}
-                
-                {!emailVerified && salonInfo === null && email && !verifyingEmail && (
-                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <div className="flex items-start gap-2">
-                      <span className="text-yellow-500 mt-0.5">ℹ️</span>
-                      <div className="text-sm">
-                        <p className="font-medium text-yellow-800">Aucun salon trouvé avec cet email</p>
-                        <p className="text-yellow-600 mt-1">
-                          Vous pourrez demander la création d'un salon après votre inscription.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                <input 
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Ex: antoine.martin@monsalon.fr"
+                  className="w-full p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#48BB78] outline-none transition-all shadow-sm"
+                />
+              </div>
+
+              {/* Téléphone */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-bold text-gray-700">Numéro de téléphone</label>
+                <input 
+                  type="tel" 
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Ex: 06 12 34 56 78"
+                  className="w-full p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#48BB78] outline-none transition-all shadow-sm"
+                />
               </div>
 
             {/* Mot de passe */}
@@ -300,8 +256,8 @@ const PlanityProRegister = () => {
             {/* Bouton Créer mon compte */}
             <button 
               type="submit"
-              disabled={loading}
-              className="w-full bg-[#48BB78] hover:bg-[#3da368] text-white py-4 rounded-lg font-bold text-lg shadow-md transition-colors mt-4 disabled:opacity-50"
+              disabled={loading || !isFormValid}
+              className="w-full bg-[#48BB78] hover:bg-[#3da368] text-white py-4 rounded-lg font-bold text-lg shadow-md transition-colors mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Création...' : 'Créer mon compte'}
             </button>
@@ -338,9 +294,9 @@ const PlanityProRegister = () => {
         <p className="text-gray-400 mb-10">Équipez-vous de Planity et gagnez du temps au quotidien</p>
         
         <ul className="space-y-6">
-          {[
-            "Plus de 50 000 professionnels de la beauté utilisent Planity en France, Belgique et Allemagne.",
-            "Une prise de rendez-vous sans commission 24h/24h",
+            {[
+              "Plus de 50 000 professionnels de la beauté utilisent Planity au Bénin, au Nigeria et en Togo.",
+              "Une prise de rendez-vous sans commission 24h/24h",
             "Une plateforme aux 10 millions de visiteurs par mois"
           ].map((text, i) => (
             <li key={i} className="flex gap-4">
