@@ -277,35 +277,35 @@ const BookingModal = ({ salonId, onClose, isEdit = false, appointment = null, on
   }, [message]);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-      <div className="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full my-8 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto p-4">
+      <div className="bg-white p-4 md:p-6 rounded-lg shadow-lg max-w-2xl w-full my-4 md:my-8 max-h-[95vh] md:max-h-[90vh] overflow-y-auto">
         {/* En-tête avec indicateur de progression */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-4">
+        <div className="mb-4 md:mb-6">
+          <h2 className="text-xl md:text-2xl font-bold mb-4">
             {isEdit ? 'Modifier' : 'Prendre'} rendez-vous
           </h2>
           
           {/* Barre de progression */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 px-2">
             {[1, 2, 3].map((s) => (
               <div key={s} className="flex items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-sm md:text-base ${
                   step >= s ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-600'
                 }`}>
                   {s}
                 </div>
                 {s < 3 && (
-                  <div className={`w-16 h-1 mx-2 ${step > s ? 'bg-purple-600' : 'bg-gray-200'}`} />
+                  <div className={`w-8 md:w-16 h-1 mx-1 md:mx-2 ${step > s ? 'bg-purple-600' : 'bg-gray-200'}`} />
                 )}
               </div>
             ))}
           </div>
           
           {/* Labels des étapes */}
-          <div className="flex justify-between text-sm text-gray-600">
+          <div className="flex justify-between text-xs md:text-sm text-gray-600 px-0 md:px-2">
             <span className={step >= 1 ? 'font-bold text-purple-600' : ''}>Catégorie</span>
             <span className={step >= 2 ? 'font-bold text-purple-600' : ''}>Service</span>
-            <span className={step >= 3 ? 'font-bold text-purple-600' : ''}>Date & Heure</span>
+            <span className={step >= 3 ? 'font-bold text-purple-600' : ''}>Date</span>
           </div>
         </div>
 

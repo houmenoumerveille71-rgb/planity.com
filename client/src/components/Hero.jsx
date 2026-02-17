@@ -162,7 +162,7 @@ const Hero = () => {
   };
 
   return (
-    <div className="relative -mt-18 pt-18 h-screen w-full flex flex-col items-center justify-center">
+    <div className="relative -mt-18 pt-18 min-h-screen w-full flex flex-col items-center justify-center">
       {/* Background Image avec Overlay sombre léger */}
       <div className="absolute inset-0 z-0">
         <img 
@@ -174,9 +174,9 @@ const Hero = () => {
       </div>
 
       {/* Titres */}
-      <div className="relative z-10 text-center text-white mb-10">
-        <h2 className="text-5xl font-semibold mb-4 drop-shadow-md">Réservez en beauté</h2>
-        <p className="text-lg font-light opacity-90 italic">Simple • Immédiat • 24h/24</p>
+      <div className="relative z-10 text-center text-white mb-8 px-4">
+        <h2 className="text-3xl md:text-5xl font-semibold mb-4 drop-shadow-md">Réservez en beauté</h2>
+        <p className="text-sm md:text-lg font-light opacity-90 italic">Simple • Immédiat • 24h/24</p>
       </div>
 
       {/* Barre de recherche (Floating Search Bar) */}
@@ -188,7 +188,7 @@ const Hero = () => {
             <select 
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full outline-none text-[15px] text-gray-700 bg-transparent cursor-pointer appearance-none"
+              className="w-full outline-none text-sm md:text-[15px] text-gray-700 bg-transparent cursor-pointer appearance-none"
             >
               {CATEGORIES.map((cat) => (
                 <option key={cat.id} value={cat.id}>
@@ -211,7 +211,7 @@ const Hero = () => {
               }}
               onFocus={() => location && setShowLocationSuggestions(true)}
               onKeyDown={handleKeyDown}
-              className="w-full outline-none text-[15px] placeholder:text-gray-400"
+              className="w-full outline-none text-sm md:text-[15px] placeholder:text-gray-400"
               autoComplete="off"
             />
             

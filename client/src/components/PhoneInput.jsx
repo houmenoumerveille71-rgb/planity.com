@@ -294,7 +294,7 @@ const PhoneInput = ({
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center justify-between w-40 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex items-center justify-between w-32 sm:w-40 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <div className="flex items-center gap-2">
               <Flag code={selectedCountry?.code} />
@@ -306,7 +306,7 @@ const PhoneInput = ({
           </button>
           
           {isOpen && (
-            <div className="absolute z-50 mt-1 w-80 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-hidden">
+            <div className="absolute z-50 mt-1 w-full sm:w-80 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-hidden">
               {/* Recherche */}
               <div className="p-3 border-b bg-white sticky top-0 z-10">
                 <input

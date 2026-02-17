@@ -78,35 +78,34 @@ const PlanityHomePage = () => {
   return (
     <>
       {/* Professionals Section with Carousel */}
-      <section style={styles.professionalsSection}>
-        <div style={styles.professionalsContent}>
+      <section className="py-20 px-8 bg-gray-50">
+        <div className="max-w-300 mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center text-center md:text-left">
           {/* Carousel Container */}
-          <div style={styles.carouselContainer}>
+          <div className="relative rounded-2xl overflow-hidden aspect-square shadow-xl">
             <button 
-              style={styles.carouselButton} 
+              className="absolute top-1/2 left-2.5 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 border-none cursor-pointer flex items-center justify-center transition-all shadow-lg hover:bg-white"
               onClick={prevImage}
               onMouseEnter={() => setIsAutoPlaying(false)}
             >
               <ChevronLeft size={24} />
             </button>
 
-            <div style={styles.imageWrapper}>
+            <div className="relative w-full h-full">
               {carouselImages.map((img, index) => (
                 <img
                   key={index}
                   src={img}
                   alt={`Professionnel ${index + 1}`}
-                  style={{
-                    ...styles.carouselImage,
-                    opacity: index === currentImageIndex ? 1 : 0,
-                    transform: index === currentImageIndex ? 'scale(1)' : 'scale(0.95)',
-                  }}
+                  className={`absolute w-full h-full object-cover transition-all duration-800 ${
+                    index === currentImageIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                  }`}
+                  style={{ transition: 'opacity 0.8s ease-in-out, transform 0.8s ease-in-out' }}
                 />
               ))}
             </div>
 
             <button 
-              style={{...styles.carouselButton, right: '10px'}} 
+              className="absolute top-1/2 right-2.5 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 border-none cursor-pointer flex items-center justify-center transition-all shadow-lg hover:bg-white"
               onClick={nextImage}
               onMouseEnter={() => setIsAutoPlaying(false)}
             >
@@ -114,31 +113,29 @@ const PlanityHomePage = () => {
             </button>
 
             {/* Indicators */}
-            <div style={styles.indicators}>
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2 z-10">
               {carouselImages.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => goToImage(index)}
-                  style={{
-                    ...styles.indicator,
-                    backgroundColor: index === currentImageIndex ? '#6366F1' : '#D1D5DB',
-                    width: index === currentImageIndex ? '30px' : '10px',
-                  }}
+                  className={`h-2.5 rounded-full border-none cursor-pointer transition-all ${
+                    index === currentImageIndex ? 'w-8 bg-indigo-500' : 'w-2.5 bg-gray-300'
+                  }`}
                 />
               ))}
             </div>
           </div>
           
-          <div style={styles.textContent}>
-            <h2 style={styles.sectionTitle}>Découvrez nos Professionnels</h2>
-            <h3 style={styles.categoryTitle}>Coiffeur</h3>
-            <p style={styles.description}>
+          <div className="flex flex-col gap-6">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Découvrez nos Professionnels</h2>
+            <h3 className="text-xl md:text-2xl font-semibold text-gray-900">Coiffeur</h3>
+            <p className="text-base md:text-lg leading-relaxed text-gray-500">
               Envie de changer de tête ou simplement de rafraîchir votre coupe ? Vous avez besoin des conseils d'un expert pour sublimer votre style.
             </p>
-            <p style={styles.description}>
+            <p className="text-base md:text-lg leading-relaxed text-gray-500">
               Quels sont les meilleurs salons de coiffure autour de chez vous ? Le portail de prises de rendez-vous Planity est votre meilleur allié.
             </p>
-            <a href="#" style={styles.seeMoreLink}>Voir plus →</a>
+            <a href="#" className="text-base font-semibold text-indigo-500 no-underline transition-all hover:text-indigo-600">Voir plus →</a>
           </div>
         </div>
       </section>
@@ -150,48 +147,41 @@ const PlanityHomePage = () => {
       <PlanityStatsSection />
 
       {/* Recruitment Section */}
-      <section style={styles.recruitmentSection}>
-        <div style={styles.recruitmentContent}>
-          
+      <section className="py-16 px-8 max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row items-center gap-12 text-center md:text-left">
           {/* Colonne Gauche : Image */}
-          <div style={styles.recruitmentImageContainer}>
-            <div style={styles.recruitmentImageWrapper}>
+          <div className="w-full md:w-1/2">
+            <div className="overflow-hidden rounded-xl shadow-xl">
               <img 
                 src="/images/Image (10).jpeg" 
                 alt="Équipe Planity" 
-                style={styles.recruitmentImage}
+                className="w-full h-auto object-cover grayscale transition-all duration-500 hover:grayscale-0"
               />
             </div>
           </div>
 
           {/* Colonne Droite : Contenu texte */}
-          <div style={styles.recruitmentTextContent}>
+          <div className="w-full md:w-1/2 flex flex-col items-start">
             {/* Label Surtitre */}
-            <div style={styles.recruitmentLabelWrapper}>
-              <span style={styles.recruitmentLabel}>Professionnel</span>
-              <div style={styles.recruitmentBar}></div>
+            <div className="mb-6">
+              <span className="text-[0.625rem] font-bold tracking-widest text-slate-500 uppercase">Professionnel</span>
+              <div className="w-10 h-0.5 bg-indigo-600 mt-1"></div>
             </div>
 
             {/* Titre */}
-            <h2 style={styles.recruitmentTitle}>
+            <h2 className="text-xl md:text-3xl font-light text-slate-900 leading-tight mb-6">
               Planity recherche des profils dans tout le Bénin pour digitaliser le secteur de la beauté
             </h2>
 
             {/* Signature */}
-            <p style={styles.recruitmentSubtitle}>
-              Antoine Puymirat - <span style={styles.recruitmentSubtitleGray}>CEO</span>
+            <p className="text-slate-500 font-medium mb-10">
+              Antoine Puymirat - <span className="text-slate-400">CEO</span>
             </p>
 
             {/* Bouton CTA */}
             <button 
-              style={styles.recruitmentButton}
+              className="py-4 px-8 bg-[#1a1a1a] text-white border-none rounded-lg text-sm font-semibold cursor-pointer transition-all hover:bg-slate-700"
               onClick={() => navigate('/careers')}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#334155';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#1a1a1a';
-              }}
             >
               Découvrir nos offres
             </button>
@@ -200,84 +190,20 @@ const PlanityHomePage = () => {
       </section>
 
       {/* Locations Section */}
-      <section style={styles.locationsSection}>
-        <div style={styles.locationsContent}>
-          <p style={styles.locationsLabel}>PARTOUT AU BÉNIN</p>
-          <h2 style={styles.locationsTitle}>Trouvez votre établissement beauté partout au Bénin</h2>
+      <section className="py-20 px-8 bg-white">
+        <div className="max-w-300 mx-auto">
+          <p className="text-sm font-bold tracking-wider text-gray-500 mb-4 text-center">PARTOUT AU BÉNIN</p>
+          <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-12 text-center">Trouvez votre établissement beauté partout au Bénin</h2>
           
-          <div style={styles.categoriesGrid}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             {categories.map((category, idx) => (
-              <div 
-                key={idx} 
-                style={styles.categoryCard}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px)';
-                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.15)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <h3 style={styles.categoryCardTitle}>{category.title}</h3>
-                <p style={styles.categoryCardSubtitle}>{category.subtitle}</p>
-                <p style={styles.categoryCardDescription}>{category.description}</p>
-                <div style={styles.citiesList}>
-                  {category.cities.map((city, cityIdx) => (
-                    <a 
-                      key={cityIdx} 
-                      href={`/search?category=${encodeURIComponent(category.title)}&city=${encodeURIComponent(city)}`} 
-                      style={styles.cityLink}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.textDecoration = 'underline';
-                        e.currentTarget.style.color = '#4F46E5';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.textDecoration = 'none';
-                        e.currentTarget.style.color = '#6366F1';
-                      }}
-                    >
-                      {city}
-                    </a>
-                  ))}
-                </div>
-              </div>
+              <CategoryCard key={idx} category={category} />
             ))}
           </div>
 
-          <div style={styles.otherCategoriesGrid}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {otherCategories.map((category, idx) => (
-              <div 
-                key={idx} 
-                style={styles.otherCategory}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#FFF';
-                  e.currentTarget.style.transform = 'translateY(-3px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#F9FAFB';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                <h4 style={styles.otherCategoryTitle}>{category.title}</h4>
-                <div style={styles.citiesList}>
-                  {category.cities.map((city, cityIdx) => (
-                    <a 
-                      key={cityIdx} 
-                      href={`/search?category=${encodeURIComponent(category.title)}&city=${encodeURIComponent(city)}`} 
-                      style={styles.cityLink}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.textDecoration = 'underline';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.textDecoration = 'none';
-                      }}
-                    >
-                      {city}
-                    </a>
-                  ))}
-                </div>
-              </div>
+              <OtherCategoryCard key={idx} category={category} />
             ))}
           </div>
         </div>
@@ -286,265 +212,72 @@ const PlanityHomePage = () => {
   );
 };
 
-const styles = {
-  // Professionals Section
-  professionalsSection: {
-    padding: '5rem 2rem',
-    backgroundColor: '#F9FAFB',
-  },
-  professionalsContent: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '4rem',
-    alignItems: 'center',
-  },
+const CategoryCard = ({ category }) => {
+  const handleMouseEnter = (e) => {
+    e.currentTarget.style.transform = 'translateY(-5px)';
+    e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.15)';
+  };
 
-  // Carousel Styles
-  carouselContainer: {
-    position: 'relative',
-    borderRadius: '16px',
-    overflow: 'hidden',
-    aspectRatio: '1/1',
-    boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
-  },
-  imageWrapper: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-  },
-  carouselImage: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    transition: 'opacity 0.8s ease-in-out, transform 0.8s ease-in-out',
-  },
-  carouselButton: {
-    position: 'absolute',
-    top: '50%',
-    left: '10px',
-    transform: 'translateY(-50%)',
-    zIndex: 10,
-    width: '50px',
-    height: '50px',
-    borderRadius: '50%',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    border: 'none',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.3s ease',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-  },
-  indicators: {
-    position: 'absolute',
-    bottom: '20px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    display: 'flex',
-    gap: '8px',
-    zIndex: 10,
-  },
-  indicator: {
-    height: '10px',
-    borderRadius: '5px',
-    border: 'none',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-  },
+  const handleMouseLeave = (e) => {
+    e.currentTarget.style.transform = 'translateY(0)';
+    e.currentTarget.style.boxShadow = 'none';
+  };
 
-  textContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1.5rem',
-  },
-  sectionTitle: {
-    fontSize: '2rem',
-    fontWeight: '700',
-    color: '#111827',
-  },
-  categoryTitle: {
-    fontSize: '1.5rem',
-    fontWeight: '600',
-    color: '#111827',
-  },
-  description: {
-    fontSize: '1rem',
-    lineHeight: '1.7',
-    color: '#6B7280',
-  },
-  seeMoreLink: {
-    fontSize: '1rem',
-    fontWeight: '600',
-    color: '#6366F1',
-    textDecoration: 'none',
-    transition: 'all 0.3s ease',
-  },
+  return (
+    <div 
+      className="p-8 md:p-6 bg-gray-50 rounded-xl transition-all cursor-pointer min-h-70 md:min-h-80"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">{category.title}</h3>
+      <p className="text-sm md:text-base font-semibold text-gray-500 mb-2">{category.subtitle}</p>
+      <p className="text-xs md:text-sm text-gray-400 mb-6">{category.description}</p>
+      <div className="flex flex-col gap-2">
+        {category.cities.map((city, cityIdx) => (
+          <a 
+            key={cityIdx} 
+            href={`/search?category=${encodeURIComponent(category.title)}&city=${encodeURIComponent(city)}`} 
+            className="text-sm text-indigo-500 no-underline transition-all hover:underline hover:text-indigo-600"
+          >
+            {city}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+};
 
-  // Recruitment Section
-  recruitmentSection: {
-    padding: '4rem 2rem',
-    maxWidth: '1152px',
-    margin: '0 auto',
-  },
-  recruitmentContent: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '3rem',
-  },
-  recruitmentImageContainer: {
-    width: '50%',
-  },
-  recruitmentImageWrapper: {
-    overflow: 'hidden',
-    borderRadius: '1rem',
-    boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
-  },
-  recruitmentImage: {
-    width: '100%',
-    height: 'auto',
-    objectFit: 'cover',
-    filter: 'grayscale(100%)',
-    transition: 'filter 0.5s ease',
-  },
-  recruitmentTextContent: {
-    width: '50%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-  },
-  recruitmentLabelWrapper: {
-    marginBottom: '1.5rem',
-  },
-  recruitmentLabel: {
-    fontSize: '0.625rem',
-    fontWeight: '700',
-    letterSpacing: '0.2em',
-    color: '#64748B',
-    textTransform: 'uppercase',
-  },
-  recruitmentBar: {
-    width: '40px',
-    height: '2px',
-    backgroundColor: '#4F46E5',
-    marginTop: '0.25rem',
-  },
-  recruitmentTitle: {
-    fontSize: '1.75rem',
-    fontWeight: '300',
-    color: '#0F172A',
-    lineHeight: '1.2',
-    marginBottom: '1.5rem',
-  },
-  recruitmentSubtitle: {
-    color: '#64748B',
-    fontWeight: '500',
-    marginBottom: '2.5rem',
-  },
-  recruitmentSubtitleGray: {
-    color: '#94A3B8',
-  },
-  recruitmentButton: {
-    padding: '1rem 2rem',
-    backgroundColor: '#1a1a1a',
-    color: '#FFF',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-  },
+const OtherCategoryCard = ({ category }) => {
+  const handleMouseEnter = (e) => {
+    e.currentTarget.style.backgroundColor = '#FFF';
+    e.currentTarget.style.transform = 'translateY(-3px)';
+  };
 
-  // Locations Section
-  locationsSection: {
-    padding: '5rem 2rem 5rem',
-    backgroundColor: '#FFF',
-  },
-  locationsContent: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-  },
-  locationsLabel: {
-    fontSize: '0.875rem',
-    fontWeight: '700',
-    letterSpacing: '1px',
-    color: '#6B7280',
-    marginBottom: '1rem',
-    textAlign: 'center',
-  },
-  locationsTitle: {
-    fontSize: '2.5rem',
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: '3rem',
-    textAlign: 'center',
-  },
-  categoriesGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '2rem',
-    marginBottom: '3rem',
-  },
-  categoryCard: {
-    padding: '2rem',
-    backgroundColor: '#F9FAFB',
-    borderRadius: '12px',
-    transition: 'all 0.3s ease',
-    cursor: 'pointer',
-    minHeight: '320px',
-  },
-  categoryCardTitle: {
-    fontSize: '1.5rem',
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: '0.5rem',
-  },
-  categoryCardSubtitle: {
-    fontSize: '1rem',
-    fontWeight: '600',
-    color: '#6B7280',
-    marginBottom: '0.5rem',
-  },
-  categoryCardDescription: {
-    fontSize: '0.9rem',
-    color: '#9CA3AF',
-    marginBottom: '1.5rem',
-  },
-  citiesList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem',
-  },
-  cityLink: {
-    fontSize: '0.9rem',
-    color: '#6366F1',
-    textDecoration: 'none',
-    transition: 'all 0.2s ease',
-  },
-  otherCategoriesGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '2rem',
-  },
-  otherCategory: {
-    padding: '1.5rem',
-    backgroundColor: '#F9FAFB',
-    borderRadius: '8px',
-    transition: 'all 0.3s ease',
-    cursor: 'pointer',
-    minHeight: '180px',
-  },
-  otherCategoryTitle: {
-    fontSize: '1.125rem',
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: '1rem',
-  },
+  const handleMouseLeave = (e) => {
+    e.currentTarget.style.backgroundColor = '#F9FAFB';
+    e.currentTarget.style.transform = 'translateY(0)';
+  };
+
+  return (
+    <div 
+      className="p-6 md:p-4 bg-gray-50 rounded-lg transition-all cursor-pointer min-h-37.5 md:min-h-45"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <h4 className="text-lg md:text-xl font-semibold text-gray-900 mb-4">{category.title}</h4>
+      <div className="flex flex-col gap-2">
+        {category.cities.map((city, cityIdx) => (
+          <a 
+            key={cityIdx} 
+            href={`/search?category=${encodeURIComponent(category.title)}&city=${encodeURIComponent(city)}`} 
+            className="text-sm text-indigo-500 no-underline transition-all hover:underline"
+          >
+            {city}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default PlanityHomePage;

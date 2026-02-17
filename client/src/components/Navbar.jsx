@@ -1,5 +1,5 @@
-import React from 'react';
-import { User } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, Menu, X } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, isProfessionalUser } from '../AuthContext';
 
@@ -7,6 +7,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Check if we're on the home page (with hero section)
   const isHomePage = location.pathname === '/';
@@ -36,10 +37,12 @@ const Navbar = () => {
     }
   };
 
-
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   return (
-    <nav className={`${isHomePage ? 'absolute' : 'sticky'} top-0 left-0 right-0 z-50 bg-transparent py-3 px-6 flex items-center justify-between`}>
+    <nav className={`${isHomePage ? 'absolute' : 'relative'} top-0 left-0 right-0 z-50 bg-transparent py-3 px-6 flex items-center justify-between`}>
       {/* Logo Section */}
       <div className="flex items-center gap-8">
         <h1 className={`text-2xl font-bold tracking-tighter cursor-pointer ${logoColor}`} onClick={() => navigate('/')}>
@@ -72,7 +75,7 @@ const Navbar = () => {
               className="flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors shadow-sm"
             >
               <User size={18} />
-              <span>Compte</span>
+              <span className="hidden sm:inline">Compte</span>
             </button>
           </div>
         ) : (
@@ -81,10 +84,45 @@ const Navbar = () => {
             className="flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors shadow-sm"
           >
             <User size={18} />
-            <span>Mon compte</span>
+            <span className="hidden sm:inline">Mon compte</span>
           </button>
         )}
+
+        {/* Menu Hamburger - Visible sur mobile */}
+        <button 
+          onClick={toggleMenu}
+          className={`lg:hidden p-2 rounded-lg ${isHomePage ? 'text-white' : 'text-black'}`}
+        >
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
+
+      {/* Menu mobile */}
+      {isMenuOpen && (
+        <div className={`lg:hidden absolute top-full left-0 right-0 mt-2 p-4 rounded-lg shadow-lg ${isHomePage ? 'bg-white' : 'bg-gray-50'}`}>
+          <div className="flex flex-col gap-4">
+            {/* Catégories */}
+            <div className="flex flex-col gap-2 text-gray-700">
+              <a href="/search?category=Coiffeur" className="py-2 text-sm font-medium hover:text-black transition-colors" onClick={() => setIsMenuOpen(false)}>Coiffeur</a>
+              <a href="/search?category=Barbier" className="py-2 text-sm font-medium hover:text-black transition-colors" onClick={() => setIsMenuOpen(false)}>Barbier</a>
+              <a href="/search?category=Manucure" className="py-2 text-sm font-medium hover:text-black transition-colors" onClick={() => setIsMenuOpen(false)}>Manucure</a>
+              <a href="/search?category=Institut" className="py-2 text-sm font-medium hover:text-black transition-colors" onClick={() => setIsMenuOpen(false)}>Institut de beauté</a>
+              <a href="/search?category=Bien-être" className="py-2 text-sm font-medium hover:text-black transition-colors" onClick={() => setIsMenuOpen(false)}>Bien-être</a>
+            </div>
+
+            {/* Bouton professionnel pour mobile */}
+            <button 
+              onClick={() => {
+                navigate('/professional');
+                setIsMenuOpen(false);
+              }}
+              className={`${secondaryButtonBg} backdrop-blur-sm ${secondaryButtonText} px-4 py-2.5 rounded-lg text-sm font-medium ${secondaryButtonHoverBg} transition-colors border ${secondaryButtonBorder}`}
+            >
+              Je suis un professionnel de beauté
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

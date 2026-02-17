@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const NavbarPro = () => {
   const navigate = useNavigate();
   const [isSolutionsOpen, setIsSolutionsOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const solutions = [
     { title: "Réservation en ligne 24h/24", desc: "Avec une page d'établissement dédiée." },
@@ -37,9 +38,14 @@ const NavbarPro = () => {
     { title: "Guides pratiques", desc: "Tutos et fiches pratiques pour vous aider." },
   ];
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
-    <nav className="relative bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between z-50">
-      <div className="flex items-center gap-12">
+    <>
+    <nav className="relative bg-white border-b border-gray-100 px-4 md:px-8 py-4 flex items-center justify-between z-50">
+      <div className="flex items-center gap-8 md:gap-12">
         {/* Logo */}
         <div 
           className="flex items-center gap-1 cursor-pointer"
@@ -49,7 +55,7 @@ const NavbarPro = () => {
           <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Pro</span>
         </div>
 
-        {/* Liens de navigation */}
+        {/* Liens de navigation - Desktop */}
         <div className="hidden md:flex items-center gap-8">
           {/* MENU MÉTIER */}
           <div 
@@ -143,8 +149,8 @@ const NavbarPro = () => {
         </div>
       </div>
 
-      {/* Boutons Droite */}
-      <div className="flex items-center gap-6">
+      {/* Boutons Droite - Desktop */}
+      <div className="hidden md:flex items-center gap-6">
         <button 
           onClick={() => navigate('/pro-login')}
           className="text-sm font-bold text-gray-700 hover:text-black"
@@ -158,7 +164,108 @@ const NavbarPro = () => {
           Demander une démo
         </button>
       </div>
+
+      {/* Menu Hamburger - Mobile */}
+      <div className="md:hidden">
+        <button onClick={toggleMobileMenu} className="text-gray-700">
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
     </nav>
+
+    {/* Mobile Menu */}
+    {isMobileMenuOpen && (
+      <div className="md:hidden bg-white border-b border-gray-100 shadow-lg absolute top-full left-0 right-0 z-40">
+        <div className="px-4 py-6 flex flex-col gap-6">
+          {/* Métier */}
+          <div>
+            <h3 className="font-bold text-black mb-3">Métier</h3>
+            <div className="grid grid-cols-1 gap-2">
+              {categories.map((cat) => (
+                <div 
+                  key={cat.id}
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-xl shadow-sm">
+                    {cat.icon}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-gray-900">
+                      {cat.name}
+                    </h4>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Solutions */}
+          <div>
+            <h3 className="font-bold text-black mb-3">Solutions</h3>
+            <div className="grid grid-cols-1 gap-3">
+              {solutions.map((item, index) => (
+                <div key={index} className="group cursor-pointer">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-sm text-gray-900 group-hover:text-indigo-600 transition-colors">
+                      {item.title}
+                    </h3>
+                    {item.isNew && (
+                      <span className="bg-[#1A1A1A] text-white text-[9px] font-black px-1.5 py-0.5 rounded uppercase">Nouveau</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Ressources */}
+          <div>
+            <h3 className="font-bold text-black mb-3">Ressources</h3>
+            <div className="grid grid-cols-1 gap-3">
+              {ressources.map((item, index) => (
+                <div key={index} className="group cursor-pointer">
+                  <h3 className="font-bold text-sm text-gray-900 group-hover:text-indigo-600 transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-1">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Tarifs */}
+          <div>
+            <button className="font-semibold text-gray-600 hover:text-black transition-colors">
+              Tarifs
+            </button>
+          </div>
+
+          {/* Boutons Mobile */}
+          <div className="flex flex-col gap-3 pt-3 border-t border-gray-100">
+            <button 
+              onClick={() => {
+                navigate('/pro-login');
+                setIsMobileMenuOpen(false);
+              }}
+              className="text-sm font-bold text-gray-700 hover:text-black py-2"
+            >
+              Se connecter
+            </button>
+            <button 
+              onClick={() => {
+                navigate('/pro-landing');
+                setIsMobileMenuOpen(false);
+              }}
+              className="bg-[#1A1A1A] text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-black shadow-lg transition-all"
+            >
+              Demander une démo
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 };
 

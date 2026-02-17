@@ -17,8 +17,13 @@ const ProSalonSetup = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [waitingApproval] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   // Redirect clients to their dashboard
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   useEffect(() => {
     if (user && !isProfessionalUser(user)) {
       navigate('/account');

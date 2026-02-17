@@ -133,7 +133,10 @@ const createTransporter = async () => {
 
 createTransporter();
 
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://98.91.199.140'],
+  credentials: true
+}));
 app.use(express.json());
 app.use(limiter);
 

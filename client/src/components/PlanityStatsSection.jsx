@@ -35,112 +35,34 @@ const PlanityStatsSection = () => {
   ];
 
   return (
-    <section style={styles.heroSection}>
+    <section className="flex flex-col items-center justify-center min-h-50 bg-white py-16 px-8 text-center">
       {/* Surtitre avec la barre bleue */}
-      <div style={styles.heroHeader}>
-        <span style={styles.surtitre}>Une forte croissance</span>
-        <div style={styles.barreBleue}></div>
+      <div className="flex flex-col items-center mb-6">
+        <span className="text-xs font-bold tracking-widest text-slate-500 uppercase">Une forte croissance</span>
+        <div className="w-12 h-0.5 bg-indigo-600 mt-2"></div>
       </div>
 
       {/* Titre Principal */}
-      <h1 style={styles.titrePrincipal}>
+      <h1 className="text-4xl md:text-2xl font-light text-slate-900 max-w-200 leading-tight">
         Vous êtes un professionnel de la{' '}
-        <span style={styles.titreGras}>beauté ?</span> Découvrez la prise de RDV{' '}
+        <span className="font-medium">beauté ?</span> Découvrez la prise de RDV{' '}
         en ligne !
       </h1>
 
       {/* Container principal avec fond gris */}
-      <div style={styles.container}>
-        <div style={styles.content}>
+      <div className="bg-gray-50 py-16 px-8 w-full mt-12">
+        <div className="max-w-350 mx-auto flex flex-col gap-0">
           {/* Top Stats Grid */}
-          <div style={styles.statsGrid}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0">
             {topStats.map((stat, idx) => (
-              <div 
-                key={idx} 
-                style={styles.statCard}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#F9FAFB';
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  const btn = e.currentTarget.querySelector('.stats-pro-button');
-                  if (btn) {
-                    btn.style.opacity = '1';
-                    btn.style.transform = 'translateY(0)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#FFF';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  const btn = e.currentTarget.querySelector('.stats-pro-button');
-                  if (btn) {
-                    btn.style.opacity = '0';
-                    btn.style.transform = 'translateY(10px)';
-                  }
-                }}
-              >
-                <div style={styles.cardInner}>
-                  <div style={styles.statValue}>{stat.value}</div>
-                  <div style={styles.statLabel}>{stat.label}</div>
-                  <button 
-                    className="stats-pro-button"
-                    style={styles.proButton}
-                    onClick={() => navigate('/professional')}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#333';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#000';
-                    }}
-                  >
-                    Je suis professionnel
-                  </button>
-                </div>
-              </div>
+              <StatCard key={idx} stat={stat} navigate={navigate} isLarge={false} />
             ))}
           </div>
 
           {/* Bottom Stats Grid */}
-          <div style={styles.statsGrid}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0">
             {bottomStats.map((stat, idx) => (
-              <div 
-                key={idx} 
-                style={styles.statCard}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#F9FAFB';
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  const btn = e.currentTarget.querySelector('.stats-pro-button');
-                  if (btn) {
-                    btn.style.opacity = '1';
-                    btn.style.transform = 'translateY(0)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#FFF';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  const btn = e.currentTarget.querySelector('.stats-pro-button');
-                  if (btn) {
-                    btn.style.opacity = '0';
-                    btn.style.transform = 'translateY(10px)';
-                  }
-                }}
-              >
-                <div style={styles.cardInner}>
-                  <div style={styles.bigStatValue}>{stat.value}</div>
-                  <div style={styles.bigStatLabel}>{stat.label}</div>
-                  <button 
-                    className="stats-pro-button"
-                    style={styles.proButton}
-                    onClick={() => navigate('/professional')}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#333';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#000';
-                    }}
-                  >
-                    Je suis professionnel
-                  </button>
-                </div>
-              </div>
+              <StatCard key={idx} stat={stat} navigate={navigate} isLarge={true} />
             ))}
           </div>
         </div>
@@ -149,124 +71,49 @@ const PlanityStatsSection = () => {
   );
 };
 
-const styles = {
-  heroSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '200px',
-    backgroundColor: '#FFF',
-    padding: '4rem 2rem 0',
-    textAlign: 'center',
-  },
-  heroHeader: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginBottom: '1.5rem',
-  },
-  surtitre: {
-    fontSize: '0.75rem',
-    fontWeight: '700',
-    letterSpacing: '0.2em',
-    color: '#64748B',
-    textTransform: 'uppercase',
-  },
-  barreBleue: {
-    width: '48px',
-    height: '2px',
-    backgroundColor: '#4F46E5',
-    marginTop: '0.5rem',
-  },
-  titrePrincipal: {
-    fontSize: '2.5rem',
-    fontWeight: '300',
-    color: '#0F172A',
-    maxWidth: '800px',
-    lineHeight: '1.2',
-  },
-  titreGras: {
-    fontWeight: '500',
-  },
-  container: {
-    backgroundColor: '#F9FAFB',
-    padding: '4rem 2rem',
-    width: '100%',
-    marginTop: '3rem',
-  },
-  content: {
-    maxWidth: '1400px',
-    margin: '0 auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0',
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '0',
-  },
-  statCard: {
-    backgroundColor: '#FFF',
-    border: '1px solid #E5E7EB',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    aspectRatio: '1 / 0.7',
-    transition: 'all 0.3s ease',
-    cursor: 'pointer',
-    position: 'relative',
-  },
-  cardInner: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    textAlign: 'center',
-    padding: '2rem',
-    width: '100%',
-    height: '100%',
-  },
-  statValue: {
-    fontSize: '3rem',
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: '0.5rem',
-    fontFamily: "'Inter', -apple-system, sans-serif",
-  },
-  statLabel: {
-    fontSize: '1rem',
-    color: '#6B7280',
-    lineHeight: '1.5',
-    maxWidth: '280px',
-  },
-  bigStatValue: {
-    fontSize: '3.5rem',
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: '0.5rem',
-    fontFamily: "'Inter', -apple-system, sans-serif",
-  },
-  bigStatLabel: {
-    fontSize: '1.1rem',
-    color: '#6B7280',
-    fontWeight: '500',
-  },
-  proButton: {
-    marginTop: '1rem',
-    padding: '0.75rem 1.5rem',
-    backgroundColor: '#000',
-    color: '#FFF',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '0.9rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    opacity: '0',
-    transform: 'translateY(10px)',
-    transition: 'all 0.3s ease',
-  },
+const StatCard = ({ stat, navigate, isLarge }) => {
+  const handleMouseEnter = (e) => {
+    e.currentTarget.style.backgroundColor = '#F9FAFB';
+    e.currentTarget.style.transform = 'translateY(-4px)';
+    const btn = e.currentTarget.querySelector('.stats-pro-button');
+    if (btn) {
+      btn.style.opacity = '1';
+      btn.style.transform = 'translateY(0)';
+    }
+  };
+
+  const handleMouseLeave = (e) => {
+    e.currentTarget.style.backgroundColor = '#FFF';
+    e.currentTarget.style.transform = 'translateY(0)';
+    const btn = e.currentTarget.querySelector('.stats-pro-button');
+    if (btn) {
+      btn.style.opacity = '0';
+      btn.style.transform = 'translateY(10px)';
+    }
+  };
+
+  return (
+    <div 
+      className="bg-white border border-gray-200 flex items-center justify-center aspect-[1/0.7] transition-all duration-300 cursor-pointer relative hover:bg-gray-50"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div className="flex flex-col items-center justify-center text-center p-8 md:p-6 w-full h-full">
+        <div className={`font-bold text-gray-900 mb-2 font-sans ${isLarge ? 'text-5xl md:text-4xl' : 'text-5xl md:text-3xl'}`}>
+          {stat.value}
+        </div>
+        <div className={`text-gray-500 ${isLarge ? 'text-lg md:text-base font-medium' : 'text-base md:text-sm'} max-w-70 leading-relaxed`}>
+          {stat.label}
+        </div>
+        <button 
+          className="stats-pro-button mt-4 py-3 px-6 bg-black text-white border-none rounded-lg text-sm font-semibold cursor-pointer opacity-0 translate-y-2.5 transition-all duration-300 hover:bg-gray-800"
+          onClick={() => navigate('/professional')}
+        >
+          Je suis professionnel
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default PlanityStatsSection;

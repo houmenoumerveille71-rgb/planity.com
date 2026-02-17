@@ -4,7 +4,7 @@ import {
   Calendar, Users, Scissors, Settings,
   BarChart3, Bell, Plus, Search, LogOut,
   ChevronLeft, ChevronRight, Clock, User, DollarSign, TrendingUp,
-  Trash2, Edit, Mail, Phone, MoreVertical, X, Check, Ban, Lock, Image
+  Trash2, Edit, Mail, Phone, MoreVertical, X, Check, Ban, Lock, Image, Menu
 } from 'lucide-react';
 import { useAuth, isProfessionalUser } from '../AuthContext';
 import PhoneInput from './PhoneInput';
@@ -79,6 +79,9 @@ const ProDashboard = () => {
 
   // Gallery modal state
   const [showGallery, setShowGallery] = useState(false);
+
+  // Mobile menu state
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
     { name: 'Planning', icon: <Calendar size={20} /> },
@@ -1306,12 +1309,30 @@ const ProDashboard = () => {
 
   return (
     <div className="flex h-screen bg-[#F8F9FA] font-sans">
+      {/* Mobile menu overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-[#1A1A1A] text-white flex flex-col">
+      <aside className={`fixed md:relative inset-y-0 left-0 z-50 w-64 bg-[#1A1A1A] text-white flex flex-col transform transition-transform duration-300 ${
+        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      }`}>
         <div className="p-6 mb-4">
-          <div className="flex items-center gap-1">
-            <span className="text-xl font-black tracking-tighter">PLANITY</span>
-            <span className="text-[9px] font-bold bg-white text-black px-1 rounded ml-1">PRO</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              <span className="text-xl font-black tracking-tighter">PLANITY</span>
+              <span className="text-[9px] font-bold bg-white text-black px-1 rounded ml-1">PRO</span>
+            </div>
+            <button 
+              className="md:hidden p-2 hover:bg-white/10 rounded-lg"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <X size={20} />
+            </button>
           </div>
           {salon && <p className="text-xs text-gray-400 mt-2 truncate">{salon.name}</p>}
         </div>
@@ -1320,7 +1341,10 @@ const ProDashboard = () => {
           {menuItems.map((item) => (
             <button
               key={item.name}
-              onClick={() => setActiveTab(item.name)}
+              onClick={() => {
+                setActiveTab(item.name);
+                setIsMobileMenuOpen(false);
+              }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                 activeTab === item.name 
                   ? 'bg-[#48BB78] text-white shadow-lg' 
@@ -1346,17 +1370,25 @@ const ProDashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto">
-        <div className="p-8">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{activeTab}</h1>
-              <p className="text-gray-500">Gérez votre salon</p>
+        <div className="p-4 md:p-8">
+          <div className="flex items-center justify-between mb-6 md:mb-8">
+            <div className="flex items-center gap-3">
+              <button 
+                className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
+                onClick={() => setIsMobileMenuOpen(true)}
+              >
+                <Menu size={24} className="text-gray-700" />
+              </button>
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900">{activeTab}</h1>
+                <p className="text-gray-500 text-sm md:text-base">Gérez votre salon</p>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
               <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                 <Bell size={20} className="text-gray-500" />
               </button>
-              {salon?.image && <img src={salon.image} alt="Salon" className="w-10 h-10 rounded-full object-cover" />}
+              {salon?.image && <img src={salon.image} alt="Salon" className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover" />}
             </div>
           </div>
           {renderContent()}

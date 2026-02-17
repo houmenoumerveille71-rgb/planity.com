@@ -466,18 +466,20 @@ const styles = {
   salonHeader: {
     backgroundColor: '#F9FAFB',
     borderBottom: '1px solid #E5E7EB',
-    padding: '2rem 0',
+    padding: '1rem 0',
   },
   salonHeaderContent: {
     maxWidth: '1200px',
     margin: '0 auto',
-    padding: '0 2rem',
+    padding: '0 1rem',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexDirection: 'column',
+    gap: '1rem',
   },
   salonName: {
-    fontSize: '2rem',
+    fontSize: '1.5rem',
     fontWeight: '700',
     marginBottom: '0.5rem',
   },
@@ -522,10 +524,10 @@ const styles = {
   // Gallery
   gallery: {
     maxWidth: '1200px',
-    margin: '2rem auto',
-    padding: '0 2rem',
+    margin: '1rem auto',
+    padding: '0 1rem',
     display: 'grid',
-    gridTemplateColumns: '1fr 600px',
+    gridTemplateColumns: '1fr',
     gap: '1rem',
   },
   galleryMain: {
@@ -534,12 +536,12 @@ const styles = {
   },
   galleryMainImage: {
     width: '100%',
-    height: '400px',
+    height: '250px',
     objectFit: 'cover',
   },
   galleryPlaceholder: {
     width: '100%',
-    height: '400px',
+    height: '250px',
     backgroundColor: '#E5E7EB',
     display: 'flex',
     alignItems: 'center',
@@ -548,18 +550,18 @@ const styles = {
   },
   galleryGrid: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '1rem',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: '0.5rem',
   },
   galleryImagePlaceholder: {
     width: '100%',
-    height: '190px',
+    height: '120px',
     backgroundColor: '#E5E7EB',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: '2rem',
-    borderRadius: '12px',
+    borderRadius: '8px',
   },
 
   // Booking Banner
@@ -587,11 +589,11 @@ const styles = {
   // Main Content
   mainContent: {
     maxWidth: '1200px',
-    margin: '2rem auto',
-    padding: '0 2rem',
+    margin: '1rem auto',
+    padding: '0 1rem',
     display: 'grid',
-    gridTemplateColumns: '1fr 320px',
-    gap: '2rem',
+    gridTemplateColumns: '1fr',
+    gap: '1.5rem',
   },
 
   // Services Section
@@ -632,13 +634,16 @@ const styles = {
   // Service Item
   serviceItem: {
     display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     padding: '1rem 0',
     borderBottom: '1px solid #F3F4F6',
+    gap: '0.75rem',
   },
   serviceInfo: {
     flex: 1,
+    width: '100%',
   },
   serviceName: {
     fontSize: '0.95rem',
@@ -652,20 +657,20 @@ const styles = {
   serviceRight: {
     display: 'flex',
     alignItems: 'center',
-    gap: '1.5rem',
+    gap: '1rem',
+    width: '100%',
+    justifyContent: 'space-between',
   },
   serviceDuration: {
     fontSize: '0.875rem',
     color: '#6B7280',
-    minWidth: '60px',
   },
   servicePrice: {
     fontSize: '0.95rem',
     fontWeight: '600',
-    minWidth: '80px',
   },
   selectButton: {
-    padding: '0.5rem 1.5rem',
+    padding: '0.5rem 1rem',
     backgroundColor: '#000',
     color: '#FFF',
     border: 'none',
