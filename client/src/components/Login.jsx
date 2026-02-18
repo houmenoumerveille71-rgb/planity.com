@@ -118,7 +118,15 @@ const Login = ({ isRegister = false }) => {
 <h2 className="text-2xl font-medium text-center mb-8">
   {showForgotPassword ? 'Mot de passe oublié' : isLogin ? 'Connexion' : 'Nouveau sur Planity ?'}
 </h2>
-{message && <p className="mb-4 text-center text-sm text-red-600">{message}</p>}
+{message && (
+  <p className={`mb-4 text-center text-sm p-3 rounded-lg ${
+    message.includes('succès') || message.includes('créé')
+      ? 'bg-green-50 text-green-800 border border-green-200'
+      : 'text-red-600'
+  }`}>
+    {message}
+  </p>
+)}
 <form onSubmit={handleSubmit} className="space-y-6">
   {showForgotPassword ? (
     <>
