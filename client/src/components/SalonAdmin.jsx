@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const SalonAdmin = () => {
   const { user } = useAuth();
