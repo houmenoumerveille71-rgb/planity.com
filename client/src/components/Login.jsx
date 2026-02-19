@@ -4,7 +4,7 @@ import { useAuth, isProfessionalUser } from '../AuthContext';
 import { ADMIN_CONFIG } from '../config/adminConfig';
 import PhoneInput from './PhoneInput';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const Login = ({ isRegister = false }) => {
   const { login, user, token } = useAuth();

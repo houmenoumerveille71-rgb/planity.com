@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Footer from './Footer';
 import AppointmentCard from './AppointmentCard';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const AccountPage = () => {
   const { user, logout, token } = useAuth();

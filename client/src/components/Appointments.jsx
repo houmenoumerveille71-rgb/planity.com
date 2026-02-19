@@ -4,7 +4,7 @@ import AppointmentCard from './AppointmentCard';
 import BookingModal from './BookingModal';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const Appointments = () => {
   const { token, user } = useAuth();

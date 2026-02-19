@@ -5,6 +5,8 @@ import NavbarPro from './NavbarPro';
 import PhoneInput from './PhoneInput';
 import { useAuth, isProfessionalUser } from '../AuthContext';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 const ProLandingPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -91,7 +93,7 @@ const ProLandingPage = () => {
   // Fonction pour sauvegarder chaque étape
   const saveStep = async (currentStep, stepData) => {
     try {
-      const response = await fetch('http://localhost:5000/api/demo-requests/save-step', {
+      const response = await fetch(`${API_BASE}/demo-requests/save-step`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -153,7 +155,7 @@ const ProLandingPage = () => {
       };
 
       // Mettre à jour le statut de la demande
-      const response = await fetch(`http://localhost:5000/api/demo-requests/${requestId}`, {
+      const response = await fetch(`${API_BASE}/demo-requests/${requestId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 const checkAuth = () => {
   const token = localStorage.getItem('adminToken');
   const userStr = localStorage.getItem('adminUser');
@@ -107,7 +109,7 @@ export default function AdminDashboard() {
       
       // Fetch stats
       try {
-        const statsRes = await fetch('http://localhost:5000/api/admin/stats', {
+        const statsRes = await fetch(`${API_BASE}/admin/stats`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (statsRes.ok) {
@@ -119,7 +121,7 @@ export default function AdminDashboard() {
 
       // Fetch salons
       try {
-        const salonsRes = await fetch('http://localhost:5000/api/admin/all-salons', {
+        const salonsRes = await fetch(`${API_BASE}/admin/all-salons`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (salonsRes.ok) {
@@ -131,7 +133,7 @@ export default function AdminDashboard() {
 
       // Fetch professionals
       try {
-        const prosRes = await fetch('http://localhost:5000/api/admin/professionals', {
+        const prosRes = await fetch(`${API_BASE}/admin/professionals`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (prosRes.ok) {
@@ -143,7 +145,7 @@ export default function AdminDashboard() {
 
       // Fetch clients
       try {
-        const clientsRes = await fetch('http://localhost:5000/api/admin/clients', {
+        const clientsRes = await fetch(`${API_BASE}/admin/clients`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (clientsRes.ok) {
@@ -155,7 +157,7 @@ export default function AdminDashboard() {
 
       // Fetch appointments
       try {
-        const aptsRes = await fetch('http://localhost:5000/api/admin/appointments', {
+        const aptsRes = await fetch(`${API_BASE}/admin/appointments`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (aptsRes.ok) {
@@ -167,7 +169,7 @@ export default function AdminDashboard() {
 
       // Fetch payments
       try {
-        const paysRes = await fetch('http://localhost:5000/api/admin/payments', {
+        const paysRes = await fetch(`${API_BASE}/admin/payments`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (paysRes.ok) {
@@ -179,7 +181,7 @@ export default function AdminDashboard() {
 
       // Fetch demo requests
       try {
-        const demoRes = await fetch('http://localhost:5000/api/demo-requests', {
+        const demoRes = await fetch(`${API_BASE}/demo-requests`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (demoRes.ok) {
@@ -191,7 +193,7 @@ export default function AdminDashboard() {
 
       // Fetch categories
       try {
-        const catRes = await fetch('http://localhost:5000/api/admin/categories', {
+        const catRes = await fetch(`${API_BASE}/admin/categories`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (catRes.ok) {
@@ -203,7 +205,7 @@ export default function AdminDashboard() {
 
       // Fetch settings
       try {
-        const setRes = await fetch('http://localhost:5000/api/admin/settings', {
+        const setRes = await fetch(`${API_BASE}/admin/settings`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (setRes.ok) {
@@ -224,7 +226,7 @@ export default function AdminDashboard() {
   const handleAcceptDemo = async (id) => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`http://localhost:5000/api/demo-requests/${id}/accept`, {
+      const response = await fetch(`${API_BASE}/demo-requests/${id}/accept`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -243,7 +245,7 @@ export default function AdminDashboard() {
   const handleRejectDemo = async (id) => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`http://localhost:5000/api/demo-requests/${id}/reject`, {
+      const response = await fetch(`${API_BASE}/demo-requests/${id}/reject`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -261,7 +263,7 @@ export default function AdminDashboard() {
   const handleApproveSalon = async (id) => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`http://localhost:5000/api/admin/salons/${id}/approve`, {
+      const response = await fetch(`${API_BASE}/admin/salons/${id}/approve`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -280,7 +282,7 @@ export default function AdminDashboard() {
     const reason = prompt('Raison du refus (optionnel):');
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`http://localhost:5000/api/admin/salons/${id}/reject`, {
+      const response = await fetch(`${API_BASE}/admin/salons/${id}/reject`, {
         method: 'POST',
         headers: { 
           Authorization: `Bearer ${token}`,
@@ -302,7 +304,7 @@ export default function AdminDashboard() {
   const handlePublishSalon = async (id) => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`http://localhost:5000/api/admin/salons/${id}/publish`, {
+      const response = await fetch(`${API_BASE}/admin/salons/${id}/publish`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -318,7 +320,7 @@ export default function AdminDashboard() {
   const handleToggleSalon = async (id) => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`http://localhost:5000/api/admin/salons/${id}/toggle-active`, {
+      const response = await fetch(`${API_BASE}/admin/salons/${id}/toggle-active`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -334,7 +336,7 @@ export default function AdminDashboard() {
   const handleTogglePro = async (id) => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`http://localhost:5000/api/admin/professionals/${id}/toggle-status`, {
+      const response = await fetch(`${API_BASE}/admin/professionals/${id}/toggle-status`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -350,7 +352,7 @@ export default function AdminDashboard() {
   const handleResetPassword = async (id) => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`http://localhost:5000/api/admin/professionals/${id}/reset-password`, {
+      const response = await fetch(`${API_BASE}/admin/professionals/${id}/reset-password`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -366,7 +368,7 @@ export default function AdminDashboard() {
   const handleToggleClient = async (id) => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`http://localhost:5000/api/admin/clients/${id}/toggle-status`, {
+      const response = await fetch(`${API_BASE}/admin/clients/${id}/toggle-status`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -382,7 +384,7 @@ export default function AdminDashboard() {
   const handleCancelAppointment = async (id) => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`http://localhost:5000/api/admin/appointments/${id}/cancel`, {
+      const response = await fetch(`${API_BASE}/admin/appointments/${id}/cancel`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -396,7 +398,7 @@ export default function AdminDashboard() {
   };
 
   const handleExportPayments = () => {
-    window.open('http://localhost:5000/api/admin/payments/export', '_blank');
+    window.open(`${API_BASE}/admin/payments/export`, '_blank');
   };
 
   const handleViewSalon = (salon) => {
@@ -421,7 +423,7 @@ export default function AdminDashboard() {
   const handleSaveSalon = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`http://localhost:5000/api/admin/salons/${editForm.id}`, {
+      const response = await fetch(`${API_BASE}/admin/salons/${editForm.id}`, {
         method: 'PUT',
         headers: { 
           Authorization: `Bearer ${token}`,
@@ -1066,7 +1068,7 @@ export default function AdminDashboard() {
           const data = Object.fromEntries(formData);
           try {
             const token = localStorage.getItem('adminToken');
-            const response = await fetch('http://localhost:5000/api/admin/send-email', {
+            const response = await fetch(`${API_BASE}/admin/send-email`, {
               method: 'POST',
               headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
               body: JSON.stringify(data)
@@ -1111,7 +1113,7 @@ export default function AdminDashboard() {
       e.preventDefault();
       try {
         const token = localStorage.getItem('adminToken');
-        const response = await fetch('http://localhost:5000/api/admin/categories', {
+        const response = await fetch(`${API_BASE}/admin/categories`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify(newCategory)
@@ -1130,7 +1132,7 @@ export default function AdminDashboard() {
       if (!confirm('Supprimer cette catégorie ?')) return;
       try {
         const token = localStorage.getItem('adminToken');
-        const response = await fetch(`http://localhost:5000/api/admin/categories/${id}`, {
+        const response = await fetch(`${API_BASE}/admin/categories/${id}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -1149,7 +1151,7 @@ export default function AdminDashboard() {
       const data = Object.fromEntries(formData);
       try {
         const token = localStorage.getItem('adminToken');
-        const response = await fetch('http://localhost:5000/api/admin/settings', {
+        const response = await fetch(`${API_BASE}/admin/settings`, {
           method: 'PUT',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
@@ -1169,7 +1171,7 @@ export default function AdminDashboard() {
       const data = Object.fromEntries(formData);
       try {
         const token = localStorage.getItem('adminToken');
-        const response = await fetch('http://localhost:5000/api/admin/settings/security', {
+        const response = await fetch(`${API_BASE}/admin/settings/security`, {
           method: 'PUT',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
@@ -1189,7 +1191,7 @@ export default function AdminDashboard() {
       const data = Object.fromEntries(formData);
       try {
         const token = localStorage.getItem('adminToken');
-        const response = await fetch('http://localhost:5000/api/admin/settings/cancellation', {
+        const response = await fetch(`${API_BASE}/admin/settings/cancellation`, {
           method: 'PUT',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify(data)

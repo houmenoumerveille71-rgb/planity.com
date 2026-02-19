@@ -3,6 +3,8 @@ import { Eye, EyeOff, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, isProfessionalUser } from '../AuthContext';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 const PlanityProLogin = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -25,7 +27,7 @@ const PlanityProLogin = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/pro/login', {
+      const response = await fetch(`${API_BASE}/auth/pro/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,7 +43,7 @@ const PlanityProLogin = () => {
         localStorage.setItem('user', JSON.stringify(data.user));
         
         // Vérifier si l'utilisateur a déjà un salon
-        const salonResponse = await fetch('http://localhost:5000/api/admin/salons', {
+        const salonResponse = await fetch(`${API_BASE}/admin/salons`, {
           headers: { 'Authorization': `Bearer ${data.token}` }
         });
         

@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Nav from './Navbar';
 import Footer from './Footer';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 export default function InvitationAccept() {
   const { token: encodedToken } = useParams();
   // Décoder le token car il peut être encodé dans l'URL
@@ -21,7 +23,7 @@ export default function InvitationAccept() {
 
   useEffect(() => {
     // Vérifier l'invitation
-    fetch(`http://localhost:5000/api/invitations/${encodeURIComponent(token)}`)
+    fetch(`${API_BASE}/invitations/${encodeURIComponent(token)}`)
       .then(res => res.json())
       .then(data => {
         if (data.error) {
@@ -55,7 +57,7 @@ export default function InvitationAccept() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/invitations/${encodeURIComponent(token)}/accept`, {
+      const response = await fetch(`${API_BASE}/invitations/${encodeURIComponent(token)}/accept`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

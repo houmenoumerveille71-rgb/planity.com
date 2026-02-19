@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,7 +16,7 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/admin/login', {
+      const response = await fetch(`${API_BASE}/auth/admin/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

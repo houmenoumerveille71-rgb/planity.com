@@ -6,7 +6,7 @@ import Nav from './Navbar';
 import Footer from './Footer';
 import PhoneInput from './PhoneInput';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const ProfileSettings = () => {
   const { user, token, setUser, logout } = useAuth();

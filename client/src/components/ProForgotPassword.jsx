@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check } from 'lucide-react';
 import { useAuth, isProfessionalUser } from '../AuthContext';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 const ProForgotPassword = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -25,7 +27,7 @@ const ProForgotPassword = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/forgot-password', {
+      const response = await fetch(`${API_BASE}/auth/forgot-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

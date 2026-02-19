@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Upload, Trash2, Star, Image, X, Check, Loader2 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const GalleryManager = ({ salon, onClose }) => {
   const [gallery, setGallery] = useState([]);

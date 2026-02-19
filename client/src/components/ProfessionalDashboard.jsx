@@ -15,7 +15,7 @@ import ClientList from './ClientList';
 import OpeningHoursManager from './OpeningHoursManager';
 import GalleryManager from './GalleryManager';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 const MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
@@ -108,7 +108,7 @@ const ProDashboard = () => {
     }
 
     try {
-      const salonRes = await fetch('http://localhost:5000/api/admin/salons', {
+      const salonRes = await fetch(`${API_BASE}/admin/salons`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -129,7 +129,7 @@ const ProDashboard = () => {
         setSalon(salonData);
         setServices(salonData.services || []);
 
-        const appointmentsRes = await fetch('http://localhost:5000/api/appointments', {
+        const appointmentsRes = await fetch(`${API_BASE}/appointments`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (appointmentsRes.ok) {
@@ -290,7 +290,7 @@ const ProDashboard = () => {
 
     try {
       console.log('Envoi des données:', serviceData);
-      const response = await fetch('http://localhost:5000/api/admin/services', {
+      const response = await fetch(`${API_BASE}/admin/services`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -322,7 +322,7 @@ const ProDashboard = () => {
     if (!token || !editingService) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/services/${editingService.id}`, {
+      const response = await fetch(`${API_BASE}/admin/services/${editingService.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -354,7 +354,7 @@ const ProDashboard = () => {
     if (!token) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/admin/services/${serviceId}`, {
+      const response = await fetch(`${API_BASE}/admin/services/${serviceId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -380,7 +380,7 @@ const ProDashboard = () => {
     if (!token) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/appointments/${appointmentId}`, {
+      const response = await fetch(`${API_BASE}/appointments/${appointmentId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -1099,7 +1099,7 @@ const ProDashboard = () => {
         formData.append('address', settingsData.address);
         formData.append('description', settingsData.description);
 
-        const response = await fetch('http://localhost:5000/api/admin/salons', {
+        const response = await fetch(`${API_BASE}/admin/salons`, {
           method: 'PUT',
           headers: { 'Authorization': `Bearer ${token}` },
           body: formData

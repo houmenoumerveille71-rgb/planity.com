@@ -11,7 +11,7 @@ const DAYS = [
   { value: 0, label: 'Dimanche', short: 'Dim' },
 ];
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export default function OpeningHoursManager({ salonId, readOnly = false, onUpdate }) {
   const [availabilities, setAvailabilities] = useState([]);

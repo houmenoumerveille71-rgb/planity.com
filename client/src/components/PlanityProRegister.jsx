@@ -3,6 +3,8 @@ import { Eye, EyeOff, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, isProfessionalUser } from '../AuthContext';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 const PlanityProRegister = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -82,7 +84,7 @@ const PlanityProRegister = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/pro/register', {
+      const response = await fetch(`${API_BASE}/auth/pro/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
