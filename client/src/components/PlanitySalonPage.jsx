@@ -4,7 +4,7 @@ import { MapPin, Star, Image as ImageIcon, X, ChevronLeft, ChevronRight } from '
 import Navbar from './Navbar';
 import Footer from './Footer';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 // Jours de la semaine
 const DAYS_OF_WEEK = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
