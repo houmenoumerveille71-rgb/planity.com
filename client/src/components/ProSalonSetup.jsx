@@ -4,7 +4,7 @@ import { useAuth, isProfessionalUser } from '../AuthContext';
 import NavbarPro from './NavbarPro';
 import { MapPin, Plus, Trash2, Check, Upload } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const ProSalonSetup = () => {
   const navigate = useNavigate();
