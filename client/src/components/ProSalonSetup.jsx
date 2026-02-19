@@ -441,7 +441,7 @@ const ProSalonSetup = () => {
 
                 <div className="space-y-3">
                   {days.map((day) => (
-                    <div key={day} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div key={day} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-xl gap-3">
                       <div className="flex items-center gap-4">
                         <input
                           type="checkbox"
@@ -458,7 +458,7 @@ const ProSalonSetup = () => {
                         <span className="font-medium capitalize">{day}</span>
                       </div>
                       {salon.openingHours[day]?.enabled ? (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 ml-9 sm:ml-0">
                           <input
                             type="time"
                             value={salon.openingHours[day]?.open}
@@ -469,7 +469,7 @@ const ProSalonSetup = () => {
                                 [day]: { ...salon.openingHours[day], open: e.target.value }
                               }
                             })}
-                            className="p-2 border border-gray-200 rounded-lg"
+                            className="p-2 border border-gray-200 rounded-lg text-sm"
                           />
                           <span className="text-gray-400">-</span>
                           <input
@@ -482,11 +482,11 @@ const ProSalonSetup = () => {
                                 [day]: { ...salon.openingHours[day], close: e.target.value }
                               }
                             })}
-                            className="p-2 border border-gray-200 rounded-lg"
+                            className="p-2 border border-gray-200 rounded-lg text-sm"
                           />
                         </div>
                       ) : (
-                        <span className="text-gray-400">Fermé</span>
+                        <span className="text-gray-400 ml-9 sm:ml-0">Fermé</span>
                       )}
                     </div>
                   ))}

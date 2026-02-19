@@ -77,42 +77,42 @@ const AccountPage = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Navbar avec fond blanc */}
-      <nav className="bg-white border-b border-gray-200 py-3 px-6 flex items-center justify-between sticky top-0 z-50">
+      <nav className="bg-white border-b border-gray-200 py-3 px-4 md:px-6 flex items-center justify-between sticky top-0 z-50">
         <h1 
-          className="text-2xl font-bold tracking-tighter cursor-pointer text-black" 
+          className="text-xl md:text-2xl font-bold tracking-tighter cursor-pointer text-black" 
           onClick={() => navigate('/')}
         >
           PLANITY
         </h1>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           <button 
             onClick={() => navigate('/professional')}
-            className="bg-gray-100 text-gray-800 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+            className="hidden sm:block bg-gray-100 text-gray-800 px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-medium hover:bg-gray-200 transition-colors"
           >
-            Je suis un professionnel de beauté
+            Je suis un professionnel
           </button>
           
           <button 
             onClick={() => navigate('/appointments')}
-            className="flex items-center gap-2 bg-gray-100 text-gray-800 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+            className="flex items-center gap-2 bg-gray-100 text-gray-800 px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-medium hover:bg-gray-200 transition-colors"
           >
-            Mes rendez-vous
+            Mes RDV
           </button>
 
           {user ? (
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => navigate('/account')}
-                className="flex items-center gap-2 bg-[#1A1A1A] text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-black transition-colors shadow-sm"
+                className="flex items-center gap-2 bg-[#1A1A1A] text-white px-3 md:px-5 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-medium hover:bg-black transition-colors shadow-sm"
               >
-                <span>{user.name || user.firstName || 'Mon compte'}</span>
+                <span className="truncate max-w-25 md:max-w-none">{user.name || user.firstName || 'Mon compte'}</span>
               </button>
             </div>
           ) : (
             <button 
               onClick={() => navigate('/register')}
-              className="flex items-center gap-2 bg-[#1A1A1A] text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-black transition-colors shadow-sm"
+              className="flex items-center gap-2 bg-[#1A1A1A] text-white px-3 md:px-5 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-medium hover:bg-black transition-colors shadow-sm"
             >
               Mon compte
             </button>

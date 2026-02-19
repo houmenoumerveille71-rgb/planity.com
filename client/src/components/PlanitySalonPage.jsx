@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Star, Image as ImageIcon } from 'lucide-react';
+import { MapPin, Star, Image as ImageIcon, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 
@@ -114,8 +114,8 @@ const PlanitySalonPage = () => {
     return (
       <>
         <Navbar />
-        <div style={styles.container}>
-          <p style={{ textAlign: 'center', padding: '4rem' }}>Chargement...</p>
+        <div className="min-h-screen font-['Inter',sans-serif] bg-white flex items-center justify-center">
+          <p className="text-center p-16">Chargement...</p>
         </div>
         <Footer />
       </>
@@ -126,8 +126,8 @@ const PlanitySalonPage = () => {
     return (
       <>
         <Navbar />
-        <div style={styles.container}>
-          <p style={{ textAlign: 'center', padding: '4rem' }}>Salon non trouvé</p>
+        <div className="min-h-screen font-['Inter',sans-serif] bg-white flex items-center justify-center">
+          <p className="text-center p-16">Salon non trouvé</p>
         </div>
         <Footer />
       </>
@@ -137,843 +137,365 @@ const PlanitySalonPage = () => {
   return (
     <>
       <Navbar />
-      <div style={styles.container}>
+      <div className="min-h-screen font-['Inter',sans-serif] bg-white">
         {/* Salon Header */}
-        <div style={styles.salonHeader}>
-          <div style={styles.salonHeaderContent}>
-            <div>
-              <h1 style={styles.salonName}>{salon.name}</h1>
-              <div style={styles.salonMeta}>
-                <MapPin size={16} style={styles.metaIcon} />
-                <span style={styles.address}>{salon.address}</span>
+        <div className="bg-gray-50 border-b border-gray-200 py-4">
+          <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-center md:text-left">
+              <h1 className="text-xl md:text-2xl font-bold mb-2">{salon.name}</h1>
+              <div className="flex items-center justify-center md:justify-start gap-2 mb-2 text-gray-500 text-sm">
+                <MapPin size={16} className="text-gray-500" />
+                <span>{salon.address}</span>
               </div>
-              <div style={styles.rating}>
+              <div className="flex items-center justify-center md:justify-start gap-2">
                 <Star size={16} fill="#FFB800" color="#FFB800" />
-                <span style={styles.ratingText}>4.9 (235 avis)</span>
-                <span style={styles.priceLevel}>FCFA</span>
+                <span className="text-sm font-semibold">4.9 (235 avis)</span>
+                <span className="text-gray-500 text-sm">FCFA</span>
               </div>
             </div>
-            <button style={styles.reserveButton} onClick={handleReserve}>Réserver</button>
+            <button 
+              className="px-6 py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-colors"
+              onClick={handleReserve}
+            >
+              Réserver
+            </button>
           </div>
         </div>
 
         {/* Gallery */}
-        <div style={styles.gallery}>
-          <div style={styles.galleryMain}>
-            {gallery.find(p => p.isPrimary) || gallery[0] ? (
-              <img 
-                src={(gallery.find(p => p.isPrimary) || gallery[0])?.imageUrl} 
-                alt={salon.name} 
-                style={styles.galleryMainImage}
-                onClick={() => {
-                  const index = gallery.findIndex(p => p.isPrimary) || 0;
-                  setLightboxIndex(index);
-                  setLightboxOpen(true);
-                }}
-              />
-            ) : salon.image ? (
-              <img src={salon.image} alt={salon.name} style={styles.galleryMainImage} />
-            ) : (
-              <div style={styles.galleryPlaceholder}>📷</div>
-            )}
-          </div>
-          <div style={styles.galleryGrid}>
-            {gallery.length > 0 ? (
-              gallery.slice(0, 4).map((photo, idx) => (
-                <div 
-                  key={photo.id || idx} 
-                  style={styles.galleryImagePlaceholder}
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Main Image */}
+            <div className="rounded-xl overflow-hidden">
+              {gallery.find(p => p.isPrimary) || gallery[0] ? (
+                <img 
+                  src={(gallery.find(p => p.isPrimary) || gallery[0])?.imageUrl} 
+                  alt={salon.name} 
+                  className="w-full h-48 sm:h-64 md:h-80 object-cover cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() => {
-                    setLightboxIndex(idx);
+                    const index = gallery.findIndex(p => p.isPrimary) || 0;
+                    setLightboxIndex(index);
+                    setLightboxOpen(true);
+                  }}
+                />
+              ) : salon.image ? (
+                <img src={salon.image} alt={salon.name} className="w-full h-48 sm:h-64 md:h-80 object-cover" />
+              ) : (
+                <div className="w-full h-48 sm:h-64 md:h-80 bg-gray-200 flex items-center justify-center text-4xl">
+                  📷
+                </div>
+              )}
+            </div>
+            
+            {/* Grid Images */}
+            <div className="grid grid-cols-2 gap-2">
+              {gallery.length > 0 ? (
+                gallery.slice(0, 4).map((photo, idx) => (
+                  <div 
+                    key={photo.id || idx} 
+                    className="h-24 sm:h-32 md:h-[calc(10rem)] bg-gray-200 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => {
+                      setLightboxIndex(idx);
+                      setLightboxOpen(true);
+                    }}
+                  >
+                    <img 
+                      src={photo.imageUrl} 
+                      alt={photo.title || `Photo ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className="h-24 sm:h-32 bg-gray-200 rounded-lg flex items-center justify-center text-2xl">🪞</div>
+                  <div className="h-24 sm:h-32 bg-gray-200 rounded-lg flex items-center justify-center text-2xl">💇</div>
+                  <div className="h-24 sm:h-32 bg-gray-200 rounded-lg flex items-center justify-center text-2xl">✨</div>
+                  <div className="h-24 sm:h-32 bg-gray-200 rounded-lg flex items-center justify-center text-2xl">💅</div>
+                </>
+              )}
+              {gallery.length > 4 && (
+                <div 
+                  className="h-24 sm:h-32 bg-black flex items-center justify-center text-white text-xl font-bold rounded-lg cursor-pointer hover:bg-gray-800 transition-colors"
+                  onClick={() => {
+                    setLightboxIndex(4);
                     setLightboxOpen(true);
                   }}
                 >
-                  <img 
-                    src={photo.imageUrl} 
-                    alt={photo.title || `Photo ${idx + 1}`}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }}
-                  />
+                  +{gallery.length - 4}
                 </div>
-              ))
-            ) : (
-              <>
-                <div style={styles.galleryImagePlaceholder}>🪞</div>
-                <div style={styles.galleryImagePlaceholder}>💇</div>
-                <div style={styles.galleryImagePlaceholder}>✨</div>
-                <div style={styles.galleryImagePlaceholder}>💅</div>
-              </>
-            )}
-            {gallery.length > 4 && (
-              <div 
-                style={{...styles.galleryImagePlaceholder, backgroundColor: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer'}}
-                onClick={() => {
-                  setLightboxIndex(4);
-                  setLightboxOpen(true);
-                }}
-              >
-                <span style={{ fontSize: '24px', fontWeight: 'bold' }}>+{gallery.length - 4}</span>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
         {/* Lightbox */}
         {lightboxOpen && gallery.length > 0 && (
-          <div style={styles.lightboxOverlay} onClick={() => setLightboxOpen(false)}>
+          <div 
+            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+            onClick={() => setLightboxOpen(false)}
+          >
             <button 
-              style={styles.lightboxClose}
+              className="absolute top-4 right-4 text-white text-3xl p-2 hover:bg-white/10 rounded-full transition-colors z-10"
               onClick={() => setLightboxOpen(false)}
-            >✕</button>
+            >
+              <X size={32} />
+            </button>
             <button 
-              style={styles.lightboxPrev}
+              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 text-white p-2 sm:p-4 hover:bg-white/10 rounded-full transition-colors z-10"
               onClick={(e) => {
                 e.stopPropagation();
                 setLightboxIndex((prev) => (prev > 0 ? prev - 1 : gallery.length - 1));
               }}
-            >‹</button>
+            >
+              <ChevronLeft size={32} />
+            </button>
             <img 
               src={gallery[lightboxIndex % gallery.length]?.imageUrl} 
               alt="Gallery"
-              style={styles.lightboxImage}
+              className="max-w-full max-h-[80vh] object-contain"
               onClick={(e) => e.stopPropagation()}
             />
             <button 
-              style={styles.lightboxNext}
+              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 text-white p-2 sm:p-4 hover:bg-white/10 rounded-full transition-colors z-10"
               onClick={(e) => {
                 e.stopPropagation();
                 setLightboxIndex((prev) => (prev < gallery.length - 1 ? prev + 1 : 0));
               }}
-            >›</button>
-            <div style={styles.lightboxCounter}>
+            >
+              <ChevronRight size={32} />
+            </button>
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm">
               {lightboxIndex + 1} / {gallery.length}
             </div>
           </div>
         )}
 
-      {/* Booking Banner */}
-      <div style={styles.bookingBanner}>
-        <div style={styles.bannerContent}>
-          <h2 style={styles.bannerTitle}>Réserver en ligne pour un RDV chez {salon.name}</h2>
-          <p style={styles.bannerSubtitle}>24h/24 · {salon.services?.length || 0} prestations · Paiement sur place · Confirmation immédiate</p>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div style={styles.mainContent}>
-        {/* Services Section */}
-        <div style={styles.servicesSection}>
-          <div style={styles.sectionHeader}>
-            <h2 style={styles.sectionTitle}>Choix de la prestation</h2>
-            <div style={styles.genderToggle}>
-              <button style={styles.genderButton}>Non-genrée</button>
-              <button style={{...styles.genderButton, ...styles.genderButtonActive}}>Avis</button>
-            </div>
+        {/* Booking Banner */}
+        <div className="bg-gray-50 border-y border-gray-200 py-6">
+          <div className="max-w-6xl mx-auto px-4">
+            <h2 className="text-lg sm:text-xl font-bold mb-2">Réserver en ligne pour un RDV chez {salon.name}</h2>
+            <p className="text-gray-500 text-sm">24h/24 · {salon.services?.length || 0} prestations · Paiement sur place · Confirmation immédiate</p>
           </div>
+        </div>
 
-          {/* Services du salon */}
-          {salon.services && salon.services.length > 0 ? (
-            salon.services.map((service, idx) => (
-              <div key={service.id || idx} style={styles.serviceItem}>
-                <div style={styles.serviceInfo}>
-                  <div style={styles.serviceName}>{service.name}</div>
-                  {service.description && (
-                    <div style={styles.serviceDescription}>{service.description}</div>
-                  )}
-                </div>
-                <div style={styles.serviceRight}>
-                  <div style={styles.serviceDuration}>{service.duration || 30}min</div>
-                  <div style={styles.servicePrice}>{service.price}FCFA</div>
-                  <button 
-                    style={selectedService?.id === service.id ? {...styles.selectButton, ...styles.selectButtonSelected} : styles.selectButton}
-                    onClick={() => {
-                      setSelectedService(service);
-                      navigate(`/booking/${id}/${service.id}`);
-                    }}
-                  >
-                    {selectedService?.id === service.id ? 'Sélectionné' : 'Choisir'}
-                  </button>
+        {/* Main Content */}
+        <div className="max-w-6xl mx-auto px-4 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Services Section */}
+            <div className="lg:col-span-2">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <h2 className="text-xl font-bold">Choix de la prestation</h2>
+                <div className="flex gap-2">
+                  <button className="px-4 py-2 border border-gray-200 rounded-md text-sm bg-white hover:bg-gray-50 transition-colors">Non-genrée</button>
+                  <button className="px-4 py-2 bg-black text-white rounded-md text-sm">Avis</button>
                 </div>
               </div>
-            ))
+
+              {/* Services du salon */}
+              {salon.services && salon.services.length > 0 ? (
+                salon.services.map((service, idx) => (
+                  <div key={service.id || idx} className="py-4 border-b border-gray-100">
+                    <div className="flex flex-col sm:flex-row justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="font-medium mb-1">{service.name}</div>
+                        {service.description && (
+                          <div className="text-sm text-gray-500">{service.description}</div>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6">
+                        <div className="text-sm text-gray-500">{service.duration || 30}min</div>
+                        <div className="font-semibold">{service.price}FCFA</div>
+                        <button 
+                          className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${
+                            selectedService?.id === service.id 
+                              ? 'bg-indigo-500 text-white' 
+                              : 'bg-black text-white hover:bg-gray-800'
+                          }`}
+                          onClick={() => {
+                            setSelectedService(service);
+                            navigate(`/booking/${id}/${service.id}`);
+                          }}
+                        >
+                          {selectedService?.id === service.id ? 'Sélectionné' : 'Choisir'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500">Aucun service disponible</p>
+              )}
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Rating Card */}
+              <div className="bg-gray-800 text-white p-6 rounded-xl text-center">
+                <div className="text-4xl font-bold mb-2">4.9</div>
+                <div className="flex justify-center gap-1 mb-4">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <Star key={i} size={16} fill="#FFB800" color="#FFB800" />
+                  ))}
+                </div>
+                <div className="text-left text-sm space-y-2">
+                  <div className="flex justify-between py-1">
+                    <span>Accueil</span>
+                    <span>4.9 ★</span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span>Qualité du service</span>
+                    <span>4.9 ★</span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span>Cadre et propreté</span>
+                    <span>4.9 ★</span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span>Rapport qualité prix</span>
+                    <span>4.9 ★</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Opening Hours */}
+              <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                <h3 className="font-bold mb-4">Horaires d'ouverture</h3>
+                <div className="space-y-2 text-sm">
+                  {getFormattedHours().map((item, idx) => (
+                    <div key={idx} className="flex justify-between py-1">
+                      <span className="font-medium">{item.day}</span>
+                      <span className={item.hours === 'Fermé' ? 'text-red-500 font-medium' : 'text-gray-500'}>
+                        {item.hours}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Map Section */}
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <h3 className="text-lg font-bold mb-2">Où se situe le salon ?</h3>
+          <p className="text-gray-500 mb-6">{salon.address}</p>
+          {!showMap ? (
+            <button 
+              className="flex items-center gap-2 px-6 py-3 bg-gray-100 border-2 border-gray-200 rounded-lg font-semibold hover:bg-gray-200 transition-colors mx-auto"
+              onClick={() => setShowMap(true)}
+            >
+              🗺️ Afficher la carte
+            </button>
           ) : (
-            <p style={{ color: '#6B7280' }}>Aucun service disponible</p>
+            <div>
+              <iframe
+                src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(salon.address || salon.name)}`}
+                className="w-full h-64 sm:h-80 border-0 rounded-xl mb-4"
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Google Maps - Emplacement du salon"
+              />
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(salon.address || salon.name)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-center py-3 px-6 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-colors"
+              >
+                🧭 Afficher l'itinéraire
+              </a>
+              <button 
+                className="w-full mt-2 py-2 px-4 bg-gray-100 border border-gray-200 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+                onClick={() => setShowMap(false)}
+              >
+                Masquer la carte
+              </button>
+            </div>
           )}
         </div>
 
-        {/* Sidebar */}
-        <div style={styles.sidebar}>
-          {/* Rating Card */}
-          <div style={styles.ratingCard}>
-            <div style={styles.ratingScore}>4.9</div>
-            <div style={styles.stars}>
-              {[1, 2, 3, 4, 5].map(i => (
-                <Star key={i} size={16} fill="#FFB800" color="#FFB800" />
-              ))}
-            </div>
-            <div style={styles.ratingDetails}>
-              <div style={styles.ratingRow}>
-                <span>Accueil</span>
-                <span>4.9 ★</span>
-              </div>
-              <div style={styles.ratingRow}>
-                <span>Qualité du service</span>
-                <span>4.9 ★</span>
-              </div>
-              <div style={styles.ratingRow}>
-                <span>Cadre et propreté</span>
-                <span>4.9 ★</span>
-              </div>
-              <div style={styles.ratingRow}>
-                <span>Rapport qualité prix</span>
-                <span>4.9 ★</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Opening Hours */}
-          <div style={styles.hoursCard}>
-            <h3 style={styles.cardTitle}>Horaires d'ouverture</h3>
-            {getFormattedHours().map((item, idx) => (
-              <div key={idx} style={styles.hoursRow}>
-                <span style={styles.dayName}>{item.day}</span>
-                <span style={item.hours === 'Fermé' ? styles.hoursClosed : styles.hours}>{item.hours}</span>
+        {/* Team Section */}
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <h3 className="text-xl font-bold mb-6">Collaborateurs</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
+            {team.map(member => (
+              <div key={member.id} className="flex flex-col items-center gap-3">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-black text-white flex items-center justify-center text-xl sm:text-2xl font-bold">
+                  {member.avatar}
+                </div>
+                <span className="text-sm font-medium">{member.name}</span>
               </div>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Map Section */}
-      <div style={styles.mapSection}>
-        <h3 style={styles.mapTitle}>Où se situe le salon ?</h3>
-        <p style={styles.mapAddress}>{salon.address}</p>
-        {!showMap ? (
-          <button 
-            style={styles.mapButton}
-            onClick={() => setShowMap(true)}
-          >
-            🗺️ Afficher la carte
-          </button>
-        ) : (
-          <div style={styles.mapContainer}>
-            <iframe
-              src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(salon.address || salon.name)}`}
-              style={styles.mapIframe}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="Google Maps - Emplacement du salon"
-            />
-            <a
-              href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(salon.address || salon.name)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={styles.itineraryButtonFull}
-            >
-              🧭 Afficher l'itinéraire
-            </a>
+        {/* Tabs Section */}
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <h3 className="text-xl font-bold mb-6">Informations</h3>
+          <div className="flex gap-4 sm:gap-8 border-b-2 border-gray-200 mb-8 overflow-x-auto">
             <button 
-              style={styles.hideMapButton}
-              onClick={() => setShowMap(false)}
+              className={`pb-4 px-2 whitespace-nowrap font-medium transition-colors ${
+                activeTab === 'presentation' 
+                  ? 'border-b-2 border-black text-black font-semibold' 
+                  : 'text-gray-500 hover:text-black'
+              }`}
+              onClick={() => setActiveTab('presentation')}
             >
-              Masquer la carte
+              Présentation
+            </button>
+            <button 
+              className={`pb-4 px-2 whitespace-nowrap font-medium transition-colors ${
+                activeTab === 'avis' 
+                  ? 'border-b-2 border-black text-black font-semibold' 
+                  : 'text-gray-500 hover:text-black'
+              }`}
+              onClick={() => setActiveTab('avis')}
+            >
+              À propos
             </button>
           </div>
-        )}
-      </div>
 
-      {/* Team Section */}
-      <div style={styles.teamSection}>
-        <h3 style={styles.sectionTitle}>Collaborateurs</h3>
-        <div style={styles.teamGrid}>
-          {team.map(member => (
-            <div key={member.id} style={styles.teamMember}>
-              <div style={styles.teamAvatar}>{member.avatar}</div>
-              <span style={styles.teamName}>{member.name}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Tabs Section */}
-      <div style={styles.tabsSection}>
-        <h3 style={styles.sectionTitle}>Informations</h3>
-        <div style={styles.tabs}>
-          <button 
-            style={activeTab === 'presentation' ? {...styles.tab, ...styles.tabActive} : styles.tab}
-            onClick={() => setActiveTab('presentation')}
-          >
-            Présentation
-          </button>
-          <button 
-            style={activeTab === 'avis' ? {...styles.tab, ...styles.tabActive} : styles.tab}
-            onClick={() => setActiveTab('avis')}
-          >
-            À propos
-          </button>
-        </div>
-
-        <div style={styles.tabContent}>
-          {salon.description ? (
-            <>
-              <h4 style={styles.tabContentTitle}>Présentation</h4>
-              <div style={styles.description}>
-                <p>
-                  <strong>Bienvenue chez {salon.name}</strong> !
+          <div>
+            {salon.description ? (
+              <>
+                <h4 className="font-bold mb-4">Présentation</h4>
+                <div className="text-gray-600 leading-relaxed">
+                  <p className="mb-4">
+                    <strong>Bienvenue chez {salon.name}</strong> !
+                  </p>
+                  <p>{salon.description}</p>
+                </div>
+              </>
+            ) : (
+              <div className="text-gray-600 leading-relaxed">
+                <p className="mb-4">
+                  <strong>Bienvenue chez {salon.name}</strong>, votre salon de référence !
                 </p>
-                <p>{salon.description}</p>
+                <p>
+                  Situé en plein cœur de la ville, notre salon vous accueille dans un cadre moderne et chaleureux.
+                  Notre équipe talentueuse est là pour vous offrir les meilleurs services.
+                </p>
               </div>
-            </>
-          ) : (
-            <div style={styles.description}>
-              <p>
-                <strong>Bienvenue chez {salon.name}</strong>, votre salon de référence !
-              </p>
-              <p>
-                Situé en plein cœur de la ville, notre salon vous accueille dans un cadre moderne et chaleureux.
-                Notre équipe talentueuse est là pour vous offrir les meilleurs services.
-              </p>
-            </div>
-          )}
+            )}
 
-          <div style={styles.tags}>
-            <h4 style={styles.tagsTitle}>Dans cet établissement</h4>
-            <div style={styles.tagsList}>
-              {salon.category && (
-                <span style={styles.tag}>{salon.category}</span>
-              )}
-              {tags.slice(0, 5).map((tag, idx) => (
-                <span key={idx} style={styles.tag}>{tag}</span>
-              ))}
+            <div className="mt-8 pt-8 border-t border-gray-200">
+              <h4 className="font-semibold mb-4">Dans cet établissement</h4>
+              <div className="flex flex-wrap gap-3">
+                {salon.category && (
+                  <span className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-600">{salon.category}</span>
+                )}
+                {tags.slice(0, 5).map((tag, idx) => (
+                  <span key={idx} className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-600">{tag}</span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
       </div>
       <Footer />
     </>
   );
-};
-
-const styles = {
-  container: {
-    fontFamily: "'Inter', -apple-system, sans-serif",
-    backgroundColor: '#FFFFFF',
-    minHeight: '100vh',
-  },
-
-  // Salon Header
-  salonHeader: {
-    backgroundColor: '#F9FAFB',
-    borderBottom: '1px solid #E5E7EB',
-    padding: '1rem 0',
-  },
-  salonHeaderContent: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '0 1rem',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexDirection: 'column',
-    gap: '1rem',
-  },
-  salonName: {
-    fontSize: '1.5rem',
-    fontWeight: '700',
-    marginBottom: '0.5rem',
-  },
-  salonMeta: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    marginBottom: '0.5rem',
-    color: '#6B7280',
-    fontSize: '0.9rem',
-  },
-  metaIcon: {
-    color: '#6B7280',
-  },
-  address: {
-    color: '#6B7280',
-  },
-  rating: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-  },
-  ratingText: {
-    fontSize: '0.9rem',
-    fontWeight: '600',
-  },
-  priceLevel: {
-    color: '#6B7280',
-  },
-  reserveButton: {
-    padding: '0.75rem 2.5rem',
-    backgroundColor: '#000',
-    color: '#FFF',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '1rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-
-  // Gallery
-  gallery: {
-    maxWidth: '1200px',
-    margin: '1rem auto',
-    padding: '0 1rem',
-    display: 'grid',
-    gridTemplateColumns: '1fr',
-    gap: '1rem',
-  },
-  galleryMain: {
-    borderRadius: '12px',
-    overflow: 'hidden',
-  },
-  galleryMainImage: {
-    width: '100%',
-    height: '250px',
-    objectFit: 'cover',
-  },
-  galleryPlaceholder: {
-    width: '100%',
-    height: '250px',
-    backgroundColor: '#E5E7EB',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '4rem',
-  },
-  galleryGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
-    gap: '0.5rem',
-  },
-  galleryImagePlaceholder: {
-    width: '100%',
-    height: '120px',
-    backgroundColor: '#E5E7EB',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '2rem',
-    borderRadius: '8px',
-  },
-
-  // Booking Banner
-  bookingBanner: {
-    backgroundColor: '#F9FAFB',
-    borderTop: '1px solid #E5E7EB',
-    borderBottom: '1px solid #E5E7EB',
-    padding: '1.5rem 0',
-  },
-  bannerContent: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '0 2rem',
-  },
-  bannerTitle: {
-    fontSize: '1.35rem',
-    fontWeight: '700',
-    marginBottom: '0.5rem',
-  },
-  bannerSubtitle: {
-    color: '#6B7280',
-    fontSize: '0.9rem',
-  },
-
-  // Main Content
-  mainContent: {
-    maxWidth: '1200px',
-    margin: '1rem auto',
-    padding: '0 1rem',
-    display: 'grid',
-    gridTemplateColumns: '1fr',
-    gap: '1.5rem',
-  },
-
-  // Services Section
-  servicesSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2rem',
-  },
-  sectionHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '1rem',
-  },
-  sectionTitle: {
-    fontSize: '1.5rem',
-    fontWeight: '700',
-  },
-  genderToggle: {
-    display: 'flex',
-    gap: '0.5rem',
-  },
-  genderButton: {
-    padding: '0.5rem 1rem',
-    border: '1px solid #E5E7EB',
-    borderRadius: '6px',
-    backgroundColor: '#FFF',
-    fontSize: '0.875rem',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  genderButtonActive: {
-    backgroundColor: '#000',
-    color: '#FFF',
-    borderColor: '#000',
-  },
-
-  // Service Item
-  serviceItem: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    padding: '1rem 0',
-    borderBottom: '1px solid #F3F4F6',
-    gap: '0.75rem',
-  },
-  serviceInfo: {
-    flex: 1,
-    width: '100%',
-  },
-  serviceName: {
-    fontSize: '0.95rem',
-    fontWeight: '500',
-    marginBottom: '0.25rem',
-  },
-  serviceDescription: {
-    fontSize: '0.85rem',
-    color: '#6B7280',
-  },
-  serviceRight: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '1rem',
-    width: '100%',
-    justifyContent: 'space-between',
-  },
-  serviceDuration: {
-    fontSize: '0.875rem',
-    color: '#6B7280',
-  },
-  servicePrice: {
-    fontSize: '0.95rem',
-    fontWeight: '600',
-  },
-  selectButton: {
-    padding: '0.5rem 1rem',
-    backgroundColor: '#000',
-    color: '#FFF',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  selectButtonSelected: {
-    backgroundColor: '#6366F1',
-    color: '#FFF',
-  },
-
-  // Sidebar
-  sidebar: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1.5rem',
-  },
-
-  // Rating Card
-  ratingCard: {
-    backgroundColor: '#1F2937',
-    color: '#FFF',
-    padding: '2rem',
-    borderRadius: '12px',
-    textAlign: 'center',
-  },
-  ratingScore: {
-    fontSize: '3rem',
-    fontWeight: '700',
-    marginBottom: '0.5rem',
-  },
-  stars: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '0.25rem',
-    marginBottom: '1.5rem',
-  },
-  ratingDetails: {
-    textAlign: 'left',
-  },
-  ratingRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: '0.5rem 0',
-    fontSize: '0.875rem',
-  },
-
-  // Hours Card
-  hoursCard: {
-    backgroundColor: '#F9FAFB',
-    padding: '1.5rem',
-    borderRadius: '12px',
-    border: '1px solid #E5E7EB',
-  },
-  cardTitle: {
-    fontSize: '1.125rem',
-    fontWeight: '700',
-    marginBottom: '1rem',
-  },
-  hoursRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: '0.5rem 0',
-    fontSize: '0.9rem',
-  },
-  dayName: {
-    fontWeight: '500',
-  },
-  hours: {
-    color: '#6B7280',
-  },
-  hoursClosed: {
-    color: '#DC2626',
-    fontWeight: '500',
-  },
-
-  // Map Section
-  mapSection: {
-    maxWidth: '1200px',
-    margin: '3rem auto',
-    padding: '0 2rem',
-  },
-  mapTitle: {
-    fontSize: '1.25rem',
-    fontWeight: '700',
-    marginBottom: '0.5rem',
-  },
-  mapAddress: {
-    color: '#6B7280',
-    marginBottom: '1.5rem',
-  },
-  mapContainer: {
-    position: 'relative',
-  },
-  mapIframe: {
-    width: '100%',
-    height: '350px',
-    border: '0',
-    borderRadius: '12px',
-    marginBottom: '1rem',
-  },
-  mapButton: {
-    padding: '1rem 2rem',
-    backgroundColor: '#F3F4F6',
-    color: '#374151',
-    border: '2px solid #E5E7EB',
-    borderRadius: '8px',
-    fontSize: '1rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    margin: '0 auto',
-  },
-  hideMapButton: {
-    padding: '0.75rem 1.5rem',
-    backgroundColor: '#F3F4F6',
-    color: '#374151',
-    border: '1px solid #E5E7EB',
-    borderRadius: '8px',
-    fontSize: '0.9rem',
-    cursor: 'pointer',
-    marginTop: '0.5rem',
-  },
-  itineraryButtonFull: {
-    display: 'block',
-    textAlign: 'center',
-    padding: '0.75rem 1.5rem',
-    backgroundColor: '#000',
-    color: '#FFF',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '0.9rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    textDecoration: 'none',
-  },
-
-  // Team Section
-  teamSection: {
-    maxWidth: '1200px',
-    margin: '3rem auto',
-    padding: '0 2rem',
-  },
-  teamGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '2rem',
-    marginTop: '1.5rem',
-  },
-  teamMember: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '0.75rem',
-  },
-  teamAvatar: {
-    width: '80px',
-    height: '80px',
-    borderRadius: '50%',
-    backgroundColor: '#000',
-    color: '#FFF',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '1.5rem',
-    fontWeight: '700',
-  },
-  teamName: {
-    fontSize: '0.95rem',
-    fontWeight: '500',
-  },
-
-  // Tabs Section
-  tabsSection: {
-    maxWidth: '1200px',
-    margin: '3rem auto 4rem',
-    padding: '0 2rem',
-  },
-  tabs: {
-    display: 'flex',
-    gap: '2rem',
-    borderBottom: '2px solid #E5E7EB',
-    marginTop: '1.5rem',
-    marginBottom: '2rem',
-  },
-  tab: {
-    padding: '1rem 0',
-    backgroundColor: 'transparent',
-    border: 'none',
-    borderBottom: '2px solid transparent',
-    fontSize: '1rem',
-    fontWeight: '500',
-    cursor: 'pointer',
-    color: '#6B7280',
-    transition: 'all 0.2s',
-  },
-  tabActive: {
-    borderBottomColor: '#000',
-    color: '#000',
-    fontWeight: '600',
-  },
-  tabContent: {
-    marginTop: '2rem',
-  },
-  tabContentTitle: {
-    fontSize: '1.125rem',
-    fontWeight: '700',
-    marginBottom: '1rem',
-  },
-  description: {
-    lineHeight: '1.7',
-    color: '#374151',
-    fontSize: '0.95rem',
-  },
-  tags: {
-    marginTop: '2.5rem',
-    paddingTop: '2rem',
-    borderTop: '1px solid #E5E7EB',
-  },
-  tagsTitle: {
-    fontSize: '1rem',
-    fontWeight: '600',
-    marginBottom: '1rem',
-  },
-  tagsList: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '0.75rem',
-  },
-  tag: {
-    padding: '0.5rem 1rem',
-    backgroundColor: '#F3F4F6',
-    borderRadius: '20px',
-    fontSize: '0.875rem',
-    color: '#374151',
-  },
-
-  // Lightbox
-  lightboxOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-  },
-  lightboxImage: {
-    maxWidth: '90%',
-    maxHeight: '90%',
-    objectFit: 'contain',
-  },
-  lightboxClose: {
-    position: 'absolute',
-    top: '20px',
-    right: '20px',
-    background: 'none',
-    border: 'none',
-    color: 'white',
-    fontSize: '32px',
-    cursor: 'pointer',
-    padding: '10px',
-  },
-  lightboxPrev: {
-    position: 'absolute',
-    left: '20px',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    background: 'none',
-    border: 'none',
-    color: 'white',
-    fontSize: '48px',
-    cursor: 'pointer',
-    padding: '20px',
-  },
-  lightboxNext: {
-    position: 'absolute',
-    right: '20px',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    background: 'none',
-    border: 'none',
-    color: 'white',
-    fontSize: '48px',
-    cursor: 'pointer',
-    padding: '20px',
-  },
-  lightboxCounter: {
-    position: 'absolute',
-    bottom: '20px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    color: 'white',
-    fontSize: '16px',
-  },
 };
 
 export default PlanitySalonPage;

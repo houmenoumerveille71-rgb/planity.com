@@ -517,14 +517,14 @@ const BookingModal = ({ salonId, onClose, isEdit = false, appointment = null, on
               
               <div>
                 <label className="block text-sm font-medium mb-2">Heure disponible</label>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                   {availableTimes.length > 0 ? (
                     availableTimes.map((time) => (
                       <button
                         key={time}
                         type="button"
                         onClick={() => setSelectedTime(time)}
-                        className={`p-2 rounded-lg border transition-all ${
+                        className={`p-2 text-sm rounded-lg border transition-all ${
                           selectedTime === time
                             ? 'border-purple-600 bg-purple-600 text-white'
                             : 'border-gray-200 hover:border-purple-300'
@@ -534,11 +534,11 @@ const BookingModal = ({ salonId, onClose, isEdit = false, appointment = null, on
                       </button>
                     ))
                   ) : selectedDate ? (
-                    <p className="col-span-4 text-center text-orange-600 py-4">
+                    <p className="col-span-3 sm:col-span-4 text-center text-orange-600 py-4">
                       ⚠️ Aucun créneau disponible pour cette date
                     </p>
                   ) : (
-                    <p className="col-span-4 text-center text-gray-500 py-4">
+                    <p className="col-span-3 sm:col-span-4 text-center text-gray-500 py-4">
                       Sélectionnez une date pour voir les créneaux disponibles
                     </p>
                   )}
@@ -573,11 +573,11 @@ const BookingModal = ({ salonId, onClose, isEdit = false, appointment = null, on
         )}
 
         {/* Boutons de navigation */}
-        <div className="flex justify-between mt-6 pt-4 border-t">
+        <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-6 pt-4 border-t">
           <button
             type="button"
             onClick={step === 1 ? onClose : handleBack}
-            className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-400 font-medium"
+            className="w-full sm:w-auto px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-400 font-medium text-center"
           >
             {step === 1 ? 'Annuler' : '← Retour'}
           </button>
@@ -585,7 +585,7 @@ const BookingModal = ({ salonId, onClose, isEdit = false, appointment = null, on
           <button
             onClick={handleSubmit}
             disabled={loading || (step === 3 && (!selectedDate || !selectedTime || availableTimes.length === 0))}
-            className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 font-medium"
+            className="w-full sm:w-auto px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 font-medium text-center"
           >
             {loading ? 'Chargement...' : 
              step === 1 ? 'Suivant →' :

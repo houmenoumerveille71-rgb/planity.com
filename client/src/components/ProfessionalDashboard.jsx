@@ -425,7 +425,7 @@ const ProDashboard = () => {
             <p className="text-gray-500">Ce jour est fermé</p>
           </div>
         ) : (
-          <div className="max-h-[500px] overflow-y-auto">
+          <div className="max-h-125 overflow-y-auto">
             {hours.map(hour => {
               const hourAppointments = dayAppointments.filter(apt => new Date(apt.startTime).getHours() === hour);
               const isBlocked = isSlotBlocked(currentDate, hour);
@@ -504,113 +504,119 @@ const ProDashboard = () => {
 
     return (
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div className="grid grid-cols-7 border-b border-gray-100">
-          {weekDays.map((day, idx) => {
-            const isClosed = isDayClosed(day);
-            const dayAppointments = getAppointmentsForDate(day);
-            const isToday = new Date(day).toDateString() === new Date().toDateString();
-            
-            return (
-              <div
-                key={idx}
-                onClick={() => { setCurrentDate(day); setViewMode('day'); }}
-                className={`py-3 text-center cursor-pointer hover:bg-gray-50 ${
-                  isClosed 
-                    ? 'bg-red-50' 
-                    : isToday 
-                      ? 'bg-[#48BB78]/10' 
-                      : ''
-                }`}
-              >
-                <p className={`text-xs ${isClosed ? 'text-red-400' : 'text-gray-500'}`}>{DAYS[idx]}</p>
-                <p className={`font-bold ${
-                  isClosed 
-                    ? 'text-red-400' 
-                    : isToday 
-                      ? 'text-[#48BB78]' 
-                      : ''
-                }`}>
-                  {new Date(day).getDate()}
-                </p>
-                {isClosed && (
-                  <Ban size={14} className="mx-auto text-red-400 mt-1" />
-                )}
-                {!isClosed && dayAppointments.length > 0 && (
-                  <span className="text-xs text-[#48BB78] font-medium">{dayAppointments.length} RDV</span>
-                )}
-              </div>
-            );
-          })}
+        {/* En-tête des jours - scrollable sur mobile */}
+        <div className="overflow-x-auto">
+          <div className="grid grid-cols-7 min-w-125 md:min-w-0 border-b border-gray-100">
+            {weekDays.map((day, idx) => {
+              const isClosed = isDayClosed(day);
+              const dayAppointments = getAppointmentsForDate(day);
+              const isToday = new Date(day).toDateString() === new Date().toDateString();
+              
+              return (
+                <div
+                  key={idx}
+                  onClick={() => { setCurrentDate(day); setViewMode('day'); }}
+                  className={`py-3 text-center cursor-pointer hover:bg-gray-50 ${
+                    isClosed 
+                      ? 'bg-red-50' 
+                      : isToday 
+                        ? 'bg-[#48BB78]/10' 
+                        : ''
+                  }`}
+                >
+                  <p className={`text-xs ${isClosed ? 'text-red-400' : 'text-gray-500'}`}>{DAYS[idx]}</p>
+                  <p className={`font-bold ${
+                    isClosed 
+                      ? 'text-red-400' 
+                      : isToday 
+                        ? 'text-[#48BB78]' 
+                        : ''
+                  }`}>
+                    {new Date(day).getDate()}
+                  </p>
+                  {isClosed && (
+                    <Ban size={14} className="mx-auto text-red-400 mt-1" />
+                  )}
+                  {!isClosed && dayAppointments.length > 0 && (
+                    <span className="text-xs text-[#48BB78] font-medium">{dayAppointments.length} RDV</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
-        <div className="grid grid-cols-7">
-          {weekDays.map((day, idx) => {
-            const dayAppointments = getAppointmentsForDate(day);
-            const isClosed = isDayClosed(day);
-            const hasBlockedSlots = blockedSlots.some(slot => 
-              new Date(slot.date).toDateString() === new Date(day).toDateString()
-            );
-            
-            return (
-              <div 
-                key={idx} 
-                className={`min-h-[300px] border-r border-gray-50 last:border-r-0 p-1 ${
-                  isClosed ? 'bg-red-50/50' : ''
-                }`}
-                onClick={() => { setCurrentDate(day); setViewMode('day'); }}
-              >
-                {isClosed ? (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-center">
-                      <Ban size={24} className="mx-auto text-gray-300 mb-2" />
-                      <p className="text-xs text-gray-400">Fermé</p>
+        {/* Contenu des jours - scrollable sur mobile */}
+        <div className="overflow-x-auto">
+          <div className="grid grid-cols-7 min-w-125 md:min-w-0">
+            {weekDays.map((day, idx) => {
+              const dayAppointments = getAppointmentsForDate(day);
+              const isClosed = isDayClosed(day);
+              const hasBlockedSlots = blockedSlots.some(slot => 
+                new Date(slot.date).toDateString() === new Date(day).toDateString()
+              );
+              
+              return (
+                <div 
+                  key={idx} 
+                  className={`min-h-50 md:min-h-75 border-r border-gray-50 last:border-r-0 p-1 ${
+                    isClosed ? 'bg-red-50/50' : ''
+                  }`}
+                  onClick={() => { setCurrentDate(day); setViewMode('day'); }}
+                >
+                  {isClosed ? (
+                    <div className="h-full flex items-center justify-center">
+                      <div className="text-center">
+                        <Ban size={24} className="mx-auto text-gray-300 mb-2" />
+                        <p className="text-xs text-gray-400">Fermé</p>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <>
-                    {/* Afficher les créneaux bloqués */}
-                    {blockedSlots
-                      .filter(slot => new Date(slot.date).toDateString() === new Date(day).toDateString())
-                      .slice(0, 2)
-                      .map(slot => (
+                  ) : (
+                    <>
+                      {/* Afficher les créneaux bloqués */}
+                      {blockedSlots
+                        .filter(slot => new Date(slot.date).toDateString() === new Date(day).toDateString())
+                        .slice(0, 2)
+                        .map(slot => (
+                          <div
+                            key={slot.id}
+                            className="bg-gray-100 border-l-2 border-gray-400 p-1 rounded mb-1 text-xs flex items-center gap-1"
+                          >
+                            <Lock size={10} className="text-gray-500" />
+                            <span className="truncate">{slot.hour}:00</span>
+                          </div>
+                        ))}
+                      
+                      {/* Afficher les rendez-vous */}
+                      {dayAppointments.slice(0, 3).map(apt => (
                         <div
-                          key={slot.id}
-                          className="bg-gray-100 border-l-2 border-gray-400 p-1 rounded mb-1 text-xs flex items-center gap-1"
+                          key={apt.id}
+                          onClick={(e) => { e.stopPropagation(); setSelectedAppointment(apt); setShowAppointmentModal(true); }}
+                          className="bg-[#48BB78]/10 border-l-2 border-[#48BB78] p-1 rounded mb-1 cursor-pointer hover:bg-[#48BB78]/20 text-xs"
                         >
-                          <Lock size={10} className="text-gray-500" />
-                          <span className="truncate">{slot.hour}:00</span>
+                          <p className="font-medium truncate">
+                            {new Date(apt.startTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                          <p className="truncate">{apt.user?.name || 'Client'}</p>
                         </div>
                       ))}
-                    
-                    {/* Afficher les rendez-vous */}
-                    {dayAppointments.slice(0, 3).map(apt => (
-                      <div
-                        key={apt.id}
-                        onClick={(e) => { e.stopPropagation(); setSelectedAppointment(apt); setShowAppointmentModal(true); }}
-                        className="bg-[#48BB78]/10 border-l-2 border-[#48BB78] p-1 rounded mb-1 cursor-pointer hover:bg-[#48BB78]/20 text-xs"
-                      >
-                        <p className="font-medium truncate">
-                          {new Date(apt.startTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                      
+                      {/* Indicateur s'il y a plus de rendez-vous */}
+                      {dayAppointments.length > 3 && (
+                        <p className="text-xs text-gray-400 text-center">+{dayAppointments.length - 3} autres</p>
+                      )}
+                      
+                      {/* Indicateur s'il y a des créneaux bloqués en plus */}
+                      {blockedSlots.filter(slot => new Date(slot.date).toDateString() === new Date(day).toDateString()).length > 2 && (
+                        <p className="text-xs text-gray-400 text-center">
+                          +{blockedSlots.filter(slot => new Date(slot.date).toDateString() === new Date(day).toDateString()).length - 2} bloqués
                         </p>
-                        <p className="truncate">{apt.user?.name || 'Client'}</p>
-                      </div>
-                    ))}
-                    
-                    {/* Indicateur s'il y a plus de rendez-vous */}
-                    {dayAppointments.length > 3 && (
-                      <p className="text-xs text-gray-400 text-center">+{dayAppointments.length - 3} autres</p>
-                    )}
-                    
-                    {/* Indicateur s'il y a des créneaux bloqués en plus */}
-                    {blockedSlots.filter(slot => new Date(slot.date).toDateString() === new Date(day).toDateString()).length > 2 && (
-                      <p className="text-xs text-gray-400 text-center">
-                        +{blockedSlots.filter(slot => new Date(slot.date).toDateString() === new Date(day).toDateString()).length - 2} bloqués
-                      </p>
-                    )}
-                  </>
-                )}
-              </div>
-            );
-          })}
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     );
@@ -635,79 +641,85 @@ const ProDashboard = () => {
 
     return (
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div className="grid grid-cols-7 border-b border-gray-100">
-          {DAYS.map(day => (
-            <div key={day} className="py-2 text-center text-sm font-medium text-gray-500">
-              {day}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7">
-          {days.map((day, idx) => {
-            if (!day) {
-              return <div key={idx} className="min-h-25 bg-gray-50 border-r border-gray-50"></div>;
-            }
-            const dayAppointments = getAppointmentsForDate(day);
-            const isToday = new Date(day).toDateString() === new Date().toDateString();
-            const isClosed = isDayClosed(day);
-            const hasBlockedSlots = blockedSlots.some(slot => 
-              new Date(slot.date).toDateString() === new Date(day).toDateString()
-            );
-            
-            return (
-              <div
-                key={idx}
-                onClick={() => { setCurrentDate(day); setViewMode('day'); }}
-                className={`min-h-25 border-r border-gray-50 last:border-r-0 p-1 cursor-pointer hover:bg-gray-50 ${
-                  isClosed 
-                    ? 'bg-red-50' 
-                    : isToday 
-                      ? 'bg-[#48BB78]/5' 
-                      : ''
-                }`}
-              >
-                <p className={`text-sm text-right ${
-                  isClosed 
-                    ? 'text-red-400' 
-                    : isToday 
-                      ? 'font-bold text-[#48BB78]' 
-                      : ''
-                }`}>
-                  {day.getDate()}
-                </p>
-                
-                {isClosed ? (
-                  <div className="flex items-center justify-center mt-1">
-                    <Ban size={14} className="text-red-300" />
-                  </div>
-                ) : (
-                  <>
-                    {dayAppointments.length > 0 && (
-                      <div className="mt-1">
-                        {dayAppointments.slice(0, 2).map(apt => (
-                          <div key={apt.id} className="bg-[#48BB78]/10 text-[10px] p-0.5 rounded mb-0.5 truncate">
-                            {new Date(apt.startTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} {apt.user?.name?.split(' ')[0]}
-                          </div>
-                        ))}
-                        {dayAppointments.length > 2 && (
-                          <p className="text-[10px] text-gray-400">+{dayAppointments.length - 2}</p>
-                        )}
-                      </div>
-                    )}
-                    
-                    {hasBlockedSlots && !isClosed && (
-                      <div className="mt-1 flex items-center gap-1">
-                        <Lock size={10} className="text-gray-400" />
-                        <span className="text-[10px] text-gray-400">
-                          {blockedSlots.filter(slot => new Date(slot.date).toDateString() === new Date(day).toDateString()).length}
-                        </span>
-                      </div>
-                    )}
-                  </>
-                )}
+        {/* En-tête des jours - scrollable sur mobile */}
+        <div className="overflow-x-auto">
+          <div className="grid grid-cols-7 min-w-125 md:min-w-0 border-b border-gray-100">
+            {DAYS.map(day => (
+              <div key={day} className="py-2 text-center text-sm font-medium text-gray-500">
+                {day}
               </div>
-            );
-          })}
+            ))}
+          </div>
+        </div>
+        {/* Contenu du mois - scrollable sur mobile */}
+        <div className="overflow-x-auto">
+          <div className="grid grid-cols-7 min-w-125 md:min-w-0">
+            {days.map((day, idx) => {
+              if (!day) {
+                return <div key={idx} className="min-h-15 md:min-h-20 bg-gray-50 border-r border-gray-50"></div>;
+              }
+              const dayAppointments = getAppointmentsForDate(day);
+              const isToday = new Date(day).toDateString() === new Date().toDateString();
+              const isClosed = isDayClosed(day);
+              const hasBlockedSlots = blockedSlots.some(slot => 
+                new Date(slot.date).toDateString() === new Date(day).toDateString()
+              );
+              
+              return (
+                <div
+                  key={idx}
+                  onClick={() => { setCurrentDate(day); setViewMode('day'); }}
+                  className={`min-h-15 md:min-h-20 border-r border-gray-50 last:border-r-0 p-1 cursor-pointer hover:bg-gray-50 ${
+                    isClosed 
+                      ? 'bg-red-50' 
+                      : isToday 
+                        ? 'bg-[#48BB78]/5' 
+                        : ''
+                  }`}
+                >
+                  <p className={`text-xs md:text-sm text-right ${
+                    isClosed 
+                      ? 'text-red-400' 
+                      : isToday 
+                        ? 'font-bold text-[#48BB78]' 
+                        : ''
+                  }`}>
+                    {day.getDate()}
+                  </p>
+                  
+                  {isClosed ? (
+                    <div className="flex items-center justify-center mt-1">
+                      <Ban size={14} className="text-red-300" />
+                    </div>
+                  ) : (
+                    <>
+                      {dayAppointments.length > 0 && (
+                        <div className="mt-1">
+                          {dayAppointments.slice(0, 2).map(apt => (
+                            <div key={apt.id} className="bg-[#48BB78]/10 text-[8px] md:text-[10px] p-0.5 rounded mb-0.5 truncate">
+                              {new Date(apt.startTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} {apt.user?.name?.split(' ')[0]}
+                            </div>
+                          ))}
+                          {dayAppointments.length > 2 && (
+                            <p className="text-[8px] md:text-[10px] text-gray-400">+{dayAppointments.length - 2}</p>
+                          )}
+                        </div>
+                      )}
+                      
+                      {hasBlockedSlots && !isClosed && (
+                        <div className="mt-1 flex items-center gap-1">
+                          <Lock size={10} className="text-gray-400" />
+                          <span className="text-[8px] md:text-[10px] text-gray-400">
+                            {blockedSlots.filter(slot => new Date(slot.date).toDateString() === new Date(day).toDateString()).length}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     );
