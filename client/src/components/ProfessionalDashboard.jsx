@@ -15,7 +15,9 @@ import ClientList from './ClientList';
 import OpeningHoursManager from './OpeningHoursManager';
 import GalleryManager from './GalleryManager';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL ;
+
 
 const DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 const MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
