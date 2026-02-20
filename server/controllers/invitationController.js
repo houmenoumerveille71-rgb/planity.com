@@ -86,7 +86,9 @@ export const createInvitation = async (req, res) => {
       }
     });
     
-    const inviteUrl = `http://localhost:5173/register?invite=${inviteToken}`;
+    // Utiliser l'URL du frontend depuis les variables d'environnement
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const inviteUrl = `${frontendUrl}/register?invite=${inviteToken}`;
     
     res.status(201).json({
       message: "Invitation envoyée",

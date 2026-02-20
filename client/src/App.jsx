@@ -198,9 +198,7 @@ function App() {
           {/* Tableau de bord professionnel */}
           <Route path="/professional/dashboard" element={
             <>
-              <Nav />
               <ProfessionalDashboard />
-              <Footer />
             </>
           } />
 

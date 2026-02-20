@@ -134,10 +134,15 @@ const createTransporter = async () => {
 createTransporter();
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://98.91.199.140'],
+  origin: [
+    'http://localhost:5173', 
+    'http://98.91.199.140',
+    process.env.FRONTEND_URL
+  ].filter(Boolean),
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(limiter);
 
 import authController from './controllers/authController.js';
@@ -191,7 +196,9 @@ app.post('/api/auth/forgot-password', async (req, res) => {
 
     await prisma.user.update({ where: { id: user.id }, data: { resetToken, resetTokenExpiry } });
 
-    const resetUrl = `http://localhost:5173/reset-password?token=${resetToken}`;
+    // Utiliser l'URL du frontend depuis les variables d'environnement
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
     console.log(`🔗 Lien de réinitialisation pour ${user.email} : ${resetUrl}`);
 
     try {
@@ -199,8 +206,21 @@ app.post('/api/auth/forgot-password', async (req, res) => {
         from: process.env.EMAIL_FROM || 'no-reply@votre-domaine.com',
         to: user.email,
         subject: 'Réinitialisation de mot de passe',
-        html: `<p>Cliquez <a href="${resetUrl}">ici</a> pour réinitialiser votre mot de passe</p>`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #333;">Réinitialisation de votre mot de passe</h2>
+            <p>Bonjour,</p>
+            <p>Vous avez demandé la réinitialisation de votre mot de passe.</p>
+            <p>Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe :</p>
+            <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0;">Réinitialiser mon mot de passe</a>
+            <p>Ou copiez ce lien dans votre navigateur :</p>
+            <p style="word-break: break-all; color: #666;">${resetUrl}</p>
+            <p><em>Ce lien expire dans 1 heure.</em></p>
+            <p>Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.</p>
+          </div>
+        `,
       });
+      console.log(`✅ Email de réinitialisation envoyé à ${user.email}`);
     } catch (emailError) {
       console.error('Erreur envoi email:', emailError);
     }
@@ -1066,9 +1086,14 @@ app.get('/api/professional/clients', invitationController.authenticateToken, asy
     const salon = await prisma.salon.findFirst({ where: { userId: req.user.id } });
     if (!salon) return res.status(404).json({ error: "Salon non trouvé" });
     
-    // Récupérer tous les clients (rôle 'client')
+    // Récupérer uniquement les clients qui ont au moins un rendez-vous dans ce salon
     const clients = await prisma.user.findMany({
-      where: { role: 'client' },
+      where: {
+        role: 'client',
+        appointments: {
+          some: { salonId: salon.id }
+        }
+      },
       select: {
         id: true,
         name: true,
