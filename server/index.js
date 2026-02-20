@@ -134,8 +134,7 @@ const createTransporter = async () => {
 createTransporter();
 
 app.use(cors({
-  origin: [
-    'http://localhost:5173', 
+  origin: [ 
     'http://98.91.199.140',
     process.env.FRONTEND_URL
   ].filter(Boolean),
@@ -203,7 +202,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
 
     try {
       await transporter.sendMail({
-        from: process.env.EMAIL_FROM || 'no-reply@votre-domaine.com',
+        from: process.env.EMAIL_FROM,
         to: user.email,
         subject: 'Réinitialisation de mot de passe',
         html: `
