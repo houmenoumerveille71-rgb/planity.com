@@ -66,16 +66,23 @@ const PORT = 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'votre-secret-jwt';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 
+// Activer trust proxy pour les serveurs derrière un proxy (nginx, AWS, etc.)
+app.set('trust proxy', 1);
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: { error: "Trop de requêtes, veuillez réessayer plus tard" }
+  message: { error: "Trop de requêtes, veuillez réessayer plus tard" },
+  standardHeaders: true,
+  legacyHeaders: false
 });
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
-  message: { error: "Trop de tentatives, veuillez réessayer plus tard" }
+  message: { error: "Trop de tentatives, veuillez réessayer plus tard" },
+  standardHeaders: true,
+  legacyHeaders: false
 });
 
 let transporter;
