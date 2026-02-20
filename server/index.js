@@ -197,7 +197,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     await prisma.user.update({ where: { id: user.id }, data: { resetToken, resetTokenExpiry } });
 
     // Utiliser l'URL du frontend depuis les variables d'environnement
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendUrl = process.env.FRONTEND_URL;
     const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
     console.log(`🔗 Lien de réinitialisation pour ${user.email} : ${resetUrl}`);
 
